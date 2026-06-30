@@ -1,9 +1,11 @@
 services:
-  - type: web
+  - type: static
     name: video-editor-portfolio
-    runtime: static
+    repo: https://github.com/Yanishales14/yuz_portfolio
+    branch: master
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    publishPath: dist
+    pullRequestPreviewsEnabled: false
     headers:
       - path: /*
         name: X-Content-Type-Options
