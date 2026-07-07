@@ -27,6 +27,3 @@ export function createRateLimiter(maxAttempts: number, windowMs: number) {
 
 // Admin login: 5 attempts per 15 minutes
 export const adminRateLimiter = createRateLimiter(5, 15 * 60 * 1000);
-
-// YouTube meta fetch: 20 per minute
-export const metaFetchLimiter = createRateLimiter(20, 60 * 1000);

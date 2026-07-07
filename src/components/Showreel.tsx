@@ -1,30 +1,39 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Volume2, VolumeX, ExternalLink } from 'lucide-react';
+import { Play, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
-import { getYouTubeEmbedUrl, getYouTubeThumbnail } from '../hooks/useYouTube';
 
 export function Showreel() {
-  const { showreelVideoId } = usePortfolio();
+  const { showreelVideoUrl, showreelThumbnailUrl } = usePortfolio();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { ref: sectionRef, isInView } = useInView(0.2);
-
-  const embedUrl = showreelVideoId
-    ? getYouTubeEmbedUrl(showreelVideoId, { autoplay: isPlaying, start: 0 })
-    : '';
-
-  const thumbnailUrl = showreelVideoId
-    ? getYouTubeThumbnail(showreelVideoId, 'maxres')
-    : 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1920&h=1080&fit=crop';
 
   const handlePlay = () => {
     setIsPlaying(true);
+    setTimeout(() => {
+      videoRef.current?.play();
+    }, 100);
   };
 
-  if (!showreelVideoId) return null;
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
+  if (!showreelVideoUrl) return null;
 
   return (
     <section id="showreel" className="py-28 px-6 lg:px-8" ref={sectionRef}>
@@ -50,16 +59,20 @@ export function Showreel() {
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Ambient blurred background */}
-          <div className="absolute -inset-8 opacity-20 blur-3xl scale-95 rounded-[3rem] overflow-hidden pointer-events-none">
-            <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
-          </div>
+          {showreelThumbnailUrl && (
+            <div className="absolute -inset-8 opacity-20 blur-3xl scale-95 rounded-[3rem] overflow-hidden pointer-events-none">
+              <img src={showreelThumbnailUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
 
           {/* Video container */}
           <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-black aspect-video">
             {!isPlaying ? (
               <>
                 {/* Thumbnail with play button */}
-                <img src={thumbnailUrl} alt="Showreel" className="w-full h-full object-cover" />
+                {showreelThumbnailUrl && (
+                  <img src={showreelThumbnailUrl} alt="Showreel" className="w-full h-full object-cover" />
+                )}
                 <div className="absolute inset-0 bg-black/30 cursor-pointer flex items-center justify-center group-hover:bg-black/40 transition-colors duration-300" onClick={handlePlay}>
                   <motion.button
                     className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
@@ -72,13 +85,21 @@ export function Showreel() {
                 </div>
               </>
             ) : (
-              <iframe
-                ref={iframeRef}
-                src={embedUrl}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Showreel"
+              <video
+                ref={videoRef}
+                src={showreelVideoUrl}
+                className="w-full h-full object-contain bg-black"
+                controls={false}
+                muted={isMuted}
+                playsInline
+                loop
+                onClick={() => {
+                  if (videoRef.current?.paused) {
+                    videoRef.current.play();
+                  } else {
+                    videoRef.current?.pause();
+                  }
+                }}
               />
             )}
 
@@ -94,21 +115,19 @@ export function Showreel() {
             {isPlaying && (
               <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
                 <button
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={toggleMute}
                   className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors"
                   aria-label={isMuted ? 'Unmute' : 'Mute'}
                 >
                   {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                 </button>
-                <a
-                  href={`https://www.youtube.com/watch?v=${showreelVideoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={toggleFullscreen}
                   className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors"
-                  aria-label="Open in YouTube"
+                  aria-label="Fullscreen"
                 >
-                  <ExternalLink size={14} />
-                </a>
+                  <Maximize2 size={14} />
+                </button>
               </div>
             )}
           </div>

@@ -2,8 +2,8 @@ export interface Project {
   id: number;
   title: string;
   category: 'commercial' | 'documentary' | 'music' | 'corporate' | 'short';
-  youtubeUrl: string;
-  videoId: string;
+  videoUrl: string;        // Cloudinary or direct .mp4/.webm URL
+  thumbnailUrl: string;    // Thumbnail image URL
   client: string;
   duration: string;
   year: string;
@@ -29,4 +29,9 @@ export interface ProcessStep {
   title: string;
   description: string;
   icon: string;
+}
+
+export interface CloudinaryConfig {
+  cloudName: string;
+  uploadPreset: string;
 }

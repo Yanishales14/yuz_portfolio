@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from '../hooks/useAnimations';
 import { usePortfolio } from '../hooks/usePortfolio';
-import { getYouTubeThumbnail } from '../hooks/useYouTube';
 
 export function FilmStrip() {
   const { projects } = usePortfolio();
@@ -33,12 +32,16 @@ export function FilmStrip() {
               {stripItems.map((project, i) => (
                 <div key={`thumb-${project.id}-${i}`} className="flex-shrink-0 mx-1.5">
                   <div className="aspect-video rounded-md overflow-hidden" style={{ width: '180px' }}>
-                    <img
-                      src={project.videoId ? getYouTubeThumbnail(project.videoId, 'hq') : ''}
-                      alt={project.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
+                    {project.thumbnailUrl ? (
+                      <img
+                        src={project.thumbnailUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-secondary to-muted" />
+                    )}
                   </div>
                 </div>
               ))}

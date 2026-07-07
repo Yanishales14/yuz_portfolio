@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Clock, User, Wrench, ExternalLink } from 'lucide-react';
+import { Play, X, Clock, User, Wrench, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
-import { getYouTubeThumbnail, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '../hooks/useYouTube';
 import type { Project } from '../models/types';
 
 const categories = [
@@ -63,12 +62,18 @@ export function ProjectGrid() {
 
 function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
   const [isHovered, setIsHovered] = useState(false);
-  const thumbnail = project.videoId ? getYouTubeThumbnail(project.videoId, 'hq') : project.youtubeUrl;
+  const thumbnail = project.thumbnailUrl;
 
   return (
     <div className="group cursor-pointer" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary border border-border mb-4 shadow-md group-hover:shadow-xl transition-all duration-500">
-        <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+        {thumbnail ? (
+          <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+            <Play size={32} className="text-muted-foreground/30" />
+          </div>
+        )}
         <motion.div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }}>
           <motion.div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: isHovered ? 1 : 0.5, opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
             <Play size={22} className="text-foreground ml-0.5" fill="currentColor" />
@@ -76,6 +81,11 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
         </motion.div>
         {project.duration && <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white rounded-lg text-xs font-medium">{project.duration}</div>}
         <div className="absolute top-3 left-3"><span className="px-2.5 py-1 bg-white/90 backdrop-blur-md text-foreground rounded-lg text-xs font-medium capitalize">{project.category}</span></div>
+        {project.videoUrl && (
+          <div className="absolute bottom-3 right-3">
+            <div className="w-2 h-2 rounded-full bg-green-400 shadow-sm" />
+          </div>
+        )}
       </div>
       <div className="px-1">
         <div className="flex items-center gap-2 mb-1.5">
@@ -89,7 +99,23 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 }
 
 function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
-  const embedUrl = project.videoId ? getYouTubeEmbedUrl(project.videoId) : '';
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
 
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
@@ -98,11 +124,31 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
 
         <div className="aspect-video bg-black relative">
-          {embedUrl ? (
-            <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={project.title} />
+          {project.videoUrl ? (
+            <>
+              <video
+                ref={videoRef}
+                src={project.videoUrl}
+                className="w-full h-full object-contain"
+                controls
+                muted={isMuted}
+                playsInline
+                poster={project.thumbnailUrl}
+              />
+              <div className="absolute top-4 left-4 flex gap-2">
+                <button onClick={toggleMute} className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label={isMuted ? 'Unmute' : 'Mute'}>
+                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                </button>
+                <button onClick={toggleFullscreen} className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Fullscreen">
+                  <Maximize2 size={14} />
+                </button>
+              </div>
+            </>
+          ) : project.thumbnailUrl ? (
+            <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white">
-              <p className="text-sm">Video unavailable</p>
+              <p className="text-sm">No video uploaded yet</p>
             </div>
           )}
         </div>
@@ -111,10 +157,10 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="px-3 py-1 bg-secondary rounded-lg text-xs font-medium capitalize">{project.category}</span>
             {project.year && <span className="px-3 py-1 bg-secondary rounded-lg text-xs font-medium">{project.year}</span>}
-            {project.videoId && (
-              <a href={getYouTubeWatchUrl(project.videoId)} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-red-200 transition-colors">
-                YouTube <ExternalLink size={10} />
-              </a>
+            {project.videoUrl && (
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium flex items-center gap-1">
+                Video Available
+              </span>
             )}
           </div>
           <h3 className="text-2xl md:text-3xl font-bold mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{project.title}</h3>

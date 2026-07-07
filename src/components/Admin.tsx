@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, Link, Loader2 } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
-import { extractYouTubeId, getYouTubeThumbnail, fetchYouTubeMeta, isValidYouTubeUrl } from '../hooks/useYouTube';
-import { metaFetchLimiter } from '../hooks/useRateLimit';
-import type { Project } from '../models/types';
+import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, extractVideoThumbnail, getVideoDuration, formatDuration } from '../hooks/useUpload';
+import { adminRateLimiter } from '../hooks/useRateLimit';
+import type { Project, CloudinaryConfig } from '../models/types';
 
 type AdminTab = 'projects' | 'profile' | 'showreel' | 'settings';
 
@@ -56,11 +56,11 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  const tabs: { key: AdminTab; label: string }[] = [
-    { key: 'projects', label: 'Projects' },
-    { key: 'showreel', label: 'Showreel' },
-    { key: 'profile', label: 'Profile' },
-    { key: 'settings', label: 'Settings' },
+  const tabs: { key: AdminTab; label: string; icon: React.ReactNode }[] = [
+    { key: 'projects', label: 'Projects', icon: <Video size={14} /> },
+    { key: 'showreel', label: 'Showreel', icon: <Video size={14} /> },
+    { key: 'profile', label: 'Profile', icon: <Image size={14} /> },
+    { key: 'settings', label: 'Settings', icon: <Cloud size={14} /> },
   ];
 
   return (
@@ -80,11 +80,23 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
+      {/* Cloudinary warning banner */}
+      {!isCloudinaryConfigured() && (
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3">
+          <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <AlertCircle size={16} className="text-amber-600 shrink-0" />
+            <p className="text-sm text-amber-800">
+              <strong>Cloudinary not configured.</strong> Go to <button onClick={() => setActiveTab('settings')} className="underline font-medium">Settings</button> to set up cloud storage for video uploads.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex gap-1 mb-8">
           {tabs.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-foreground text-background' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>
-              {tab.label}
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.key ? 'bg-foreground text-background' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>
+              {tab.icon} {tab.label}
             </button>
           ))}
         </div>
@@ -103,32 +115,264 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   );
 }
 
+/* ===================== FILE UPLOAD ZONE ===================== */
+function FileUploadZone({
+  onFileSelect,
+  accept = 'video/*,image/*',
+  label = 'Upload Video',
+  isUploading,
+  uploadProgress,
+  currentUrl,
+  currentThumbnail,
+  onRemove,
+}: {
+  onFileSelect: (file: File) => void;
+  accept?: string;
+  label?: string;
+  isUploading?: boolean;
+  uploadProgress?: number;
+  currentUrl?: string;
+  currentThumbnail?: string;
+  onRemove?: () => void;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) onFileSelect(file);
+  }, [onFileSelect]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onFileSelect(file);
+    // Reset input so the same file can be re-selected
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  if (currentUrl && !isUploading) {
+    return (
+      <div className="space-y-3">
+        <label className="block text-sm font-medium">{label}</label>
+        <div className="relative rounded-xl overflow-hidden border border-border bg-secondary">
+          {currentThumbnail && (
+            <div className="aspect-video">
+              <img src={currentThumbnail} alt="Preview" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <Video size={32} className="text-white/60" />
+              </div>
+            </div>
+          )}
+          <div className="p-3 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground truncate max-w-[200px]">✓ File uploaded</span>
+            <div className="flex gap-2">
+              <button onClick={() => inputRef.current?.click()} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 bg-secondary rounded-lg">Replace</button>
+              {onRemove && (
+                <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-600 px-2 py-1 bg-red-50 rounded-lg">Remove</button>
+              )}
+            </div>
+          </div>
+        </div>
+        <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="hidden" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium">{label}</label>
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => !isUploading && inputRef.current?.click()}
+        className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${
+          isDragging
+            ? 'border-foreground bg-foreground/5 scale-[1.02]'
+            : 'border-border hover:border-foreground/30 hover:bg-secondary/30'
+        } ${isUploading ? 'pointer-events-none' : ''}`}
+      >
+        <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="hidden" />
+
+        {isUploading ? (
+          <div className="space-y-4">
+            <Loader2 size={32} className="mx-auto animate-spin text-foreground/60" />
+            <div>
+              <p className="text-sm font-medium mb-2">Uploading... {uploadProgress}%</p>
+              <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-foreground rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
+              <Upload size={24} className="text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Drop your file here or <span className="text-foreground underline">browse</span></p>
+              <p className="text-xs text-muted-foreground mt-1">Supports MP4, MOV, WEBM, AVI • Max 100MB</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ===================== THUMBNAIL UPLOAD ===================== */
+function ThumbnailUpload({
+  onFileSelect,
+  currentThumbnail,
+  onRemove,
+}: {
+  onFileSelect: (file: File) => void;
+  currentThumbnail?: string;
+  onRemove?: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onFileSelect(file);
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium">Thumbnail</label>
+      {currentThumbnail ? (
+        <div className="relative rounded-xl overflow-hidden border border-border">
+          <img src={currentThumbnail} alt="Thumbnail" className="w-full max-w-md aspect-video object-cover" />
+          <div className="absolute top-2 right-2 flex gap-1">
+            <button onClick={() => inputRef.current?.click()} className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 text-xs">✎</button>
+            {onRemove && (
+              <button onClick={onRemove} className="w-7 h-7 rounded-lg bg-red-500/80 backdrop-blur-sm text-white flex items-center justify-center hover:bg-red-600">
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="rounded-xl border-2 border-dashed border-border p-6 text-center cursor-pointer hover:border-foreground/30 hover:bg-secondary/30 transition-all"
+        >
+          <Image size={20} className="mx-auto text-muted-foreground mb-2" />
+          <p className="text-xs text-muted-foreground">Upload thumbnail image</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-1">PNG, JPG, WEBP</p>
+        </div>
+      )}
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" />
+    </div>
+  );
+}
+
 /* ===================== PROJECTS ===================== */
 function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
   const { projects, updateProjects } = usePortfolio();
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [fetchingMeta, setFetchingMeta] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingThumb, setIsUploadingThumb] = useState(false);
 
-  const handleYouTubeUrlChange = async (url: string) => {
+  const handleVideoUpload = async (file: File) => {
     if (!editingProject) return;
-    const videoId = extractYouTubeId(url);
 
-    setEditingProject({ ...editingProject, youtubeUrl: url, videoId: videoId || '' });
+    if (!isCloudinaryConfigured()) {
+      showToast('⚠️ Cloudinary not configured. Go to Settings.');
+      return;
+    }
 
-    if (videoId && metaFetchLimiter.check()) {
-      setFetchingMeta(true);
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Extract local thumbnail while uploading
+      let localThumbnail = editingProject.thumbnailUrl;
       try {
-        const meta = await fetchYouTubeMeta(url);
-        if (meta && editingProject) {
-          setEditingProject(prev => prev ? {
-            ...prev,
-            title: prev.title || meta.title,
-            videoId,
-          } : prev);
-          showToast('Metadata extracted!');
-        }
+        localThumbnail = await extractVideoThumbnail(file);
       } catch { /* ignore */ }
-      finally { setFetchingMeta(false); }
+
+      // Get duration
+      let duration = editingProject.duration;
+      try {
+        const dur = await getVideoDuration(file);
+        duration = formatDuration(dur);
+      } catch { /* ignore */ }
+
+      // Update with local thumbnail immediately
+      setEditingProject(prev => prev ? {
+        ...prev,
+        thumbnailUrl: localThumbnail,
+        duration: duration || prev.duration,
+      } : prev);
+
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(file, {
+        onProgress: setUploadProgress,
+        resourceType: 'video',
+      });
+
+      setEditingProject(prev => prev ? {
+        ...prev,
+        videoUrl: result.url,
+        thumbnailUrl: result.thumbnailUrl || localThumbnail,
+        duration: duration || formatDuration(result.duration) || prev.duration,
+      } : prev);
+
+      showToast('✅ Video uploaded!');
+    } catch (err) {
+      showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleThumbnailUpload = async (file: File) => {
+    if (!editingProject) return;
+
+    if (!isCloudinaryConfigured()) {
+      // Just use local preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    setIsUploadingThumb(true);
+    try {
+      const result = await uploadToCloudinary(file, { resourceType: 'image' });
+      setEditingProject(prev => prev ? { ...prev, thumbnailUrl: result.thumbnailUrl } : prev);
+      showToast('✅ Thumbnail uploaded!');
+    } catch (err) {
+      // Fallback to local preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev);
+      };
+      reader.readAsDataURL(file);
+      showToast('⚠️ Cloudinary upload failed, using local preview');
+    } finally {
+      setIsUploadingThumb(false);
     }
   };
 
@@ -153,45 +397,63 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
   const addNewProject = () => {
     const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
-    setEditingProject({ id: newId, title: '', category: 'commercial', youtubeUrl: '', videoId: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: ['Premiere Pro'], role: 'Editor' });
+    setEditingProject({
+      id: newId,
+      title: '',
+      category: 'commercial',
+      videoUrl: '',
+      thumbnailUrl: '',
+      client: '',
+      duration: '',
+      year: new Date().getFullYear().toString(),
+      description: '',
+      software: ['Premiere Pro'],
+      role: 'Editor',
+    });
   };
 
   if (editingProject) {
-    const thumbnail = editingProject.videoId ? getYouTubeThumbnail(editingProject.videoId, 'hq') : '';
-
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{editingProject.title ? 'Edit' : 'New'} Project</h2>
+          <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {editingProject.videoUrl || editingProject.thumbnailUrl ? 'Edit' : 'New'} Project
+          </h2>
           <div className="flex gap-2">
             <button onClick={() => setEditingProject(null)} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
-            <button onClick={saveProject} disabled={!editingProject.videoId} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40">
+            <button onClick={saveProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
               <Save size={14} /> Save
             </button>
           </div>
         </div>
 
+        {/* Video Upload */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-          <label className="block text-sm font-medium mb-2 text-blue-900">YouTube URL</label>
-          <div className="flex gap-2">
-            <input type="text" value={editingProject.youtubeUrl} onChange={(e) => handleYouTubeUrlChange(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="flex-1 px-4 py-3 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
-            {fetchingMeta && <div className="flex items-center px-3"><Loader2 size={16} className="animate-spin text-blue-500" /></div>}
-          </div>
-          {editingProject.videoId && <p className="text-xs text-blue-600 mt-2 flex items-center gap-1"><Check size={12} /> Video detected — ID: {editingProject.videoId}</p>}
-          {!editingProject.videoId && editingProject.youtubeUrl && <p className="text-xs text-red-500 mt-2">Could not detect video ID. Make sure the URL is a valid YouTube link.</p>}
+          <FileUploadZone
+            onFileSelect={handleVideoUpload}
+            label="📹 Video File"
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            currentUrl={editingProject.videoUrl}
+            currentThumbnail={editingProject.thumbnailUrl}
+            onRemove={() => setEditingProject({ ...editingProject, videoUrl: '' })}
+          />
         </div>
 
-        {thumbnail && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Thumbnail Preview</label>
-            <img src={thumbnail} alt="Thumbnail" className="w-full max-w-md aspect-video rounded-xl object-cover border border-border" />
-          </div>
-        )}
+        {/* Thumbnail Upload */}
+        <div className="mb-6">
+          <ThumbnailUpload
+            onFileSelect={handleThumbnailUpload}
+            currentThumbnail={editingProject.thumbnailUrl}
+            onRemove={() => setEditingProject({ ...editingProject, thumbnailUrl: '' })}
+          />
+        </div>
 
+        {/* Project Details */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Title <span className="text-muted-foreground font-normal">(auto-filled from YouTube)</span></label>
-            <input type="text" value={editingProject.title} onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" />
+            <label className="block text-sm font-medium mb-2">Title</label>
+            <input type="text" value={editingProject.title} onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="My Amazing Project" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Category</label>
@@ -204,11 +466,12 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
             </select>
           </div>
           <div><label className="block text-sm font-medium mb-2">Client</label><input type="text" value={editingProject.client} onChange={(e) => setEditingProject({ ...editingProject, client: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
-          <div><label className="block text-sm font-medium mb-2">Duration</label><input type="text" value={editingProject.duration} onChange={(e) => setEditingProject({ ...editingProject, duration: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="2:30" /></div>
+          <div><label className="block text-sm font-medium mb-2">Duration <span className="font-normal text-muted-foreground">(auto-filled from video)</span></label><input type="text" value={editingProject.duration} onChange={(e) => setEditingProject({ ...editingProject, duration: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="2:30" /></div>
           <div><label className="block text-sm font-medium mb-2">Year</label><input type="text" value={editingProject.year} onChange={(e) => setEditingProject({ ...editingProject, year: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div><label className="block text-sm font-medium mb-2">Role</label><input type="text" value={editingProject.role} onChange={(e) => setEditingProject({ ...editingProject, role: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Software (comma-separated)</label><input type="text" value={editingProject.software.join(', ')} onChange={(e) => setEditingProject({ ...editingProject, software: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="Premiere Pro, After Effects" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Description</label><textarea value={editingProject.description} onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[100px]" /></div>
+          <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, or paste direct .mp4 link)</span></label><input type="text" value={editingProject.videoUrl} onChange={(e) => setEditingProject({ ...editingProject, videoUrl: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" placeholder="https://res.cloudinary.com/..." /></div>
         </div>
       </div>
     );
@@ -224,22 +487,27 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
       </div>
       {projects.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <Link size={32} className="mx-auto mb-4 opacity-30" />
+          <Video size={32} className="mx-auto mb-4 opacity-30" />
           <p className="font-medium mb-1">No projects yet</p>
-          <p className="text-sm">Add your first YouTube video to get started.</p>
+          <p className="text-sm">Upload your first video to get started.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {projects.map((project) => (
             <div key={project.id} className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-sm transition-shadow">
-              {project.videoId ? (
-                <img src={getYouTubeThumbnail(project.videoId, 'default')} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" />
+              {project.thumbnailUrl ? (
+                <img src={project.thumbnailUrl} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" />
               ) : (
-                <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0"><Link size={16} className="text-muted-foreground" /></div>
+                <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                  <Video size={16} className="text-muted-foreground" />
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{project.title || 'Untitled'}</p>
-                <p className="text-xs text-muted-foreground">{project.client} • {project.year} • {project.category}</p>
+                <p className="text-xs text-muted-foreground">
+                  {project.client} • {project.year} • {project.category}
+                  {project.videoUrl && ' • ✅ Video'}
+                </p>
               </div>
               <button onClick={() => setEditingProject({ ...project })} className="px-3 py-1.5 text-xs font-medium bg-secondary rounded-lg hover:bg-secondary/80">Edit</button>
               <button onClick={() => deleteProject(project.id)} className="p-1.5 text-muted-foreground hover:text-red-500"><Trash2 size={14} /></button>
@@ -253,18 +521,66 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
 /* ===================== SHOWREEL ===================== */
 function ShowreelManager({ showToast }: { showToast: (msg: string) => void }) {
-  const { showreelVideoId, updateShowreelVideoId } = usePortfolio();
-  const [videoId, setVideoId] = useState(showreelVideoId);
-  const [url, setUrl] = useState(showreelVideoId ? `https://www.youtube.com/watch?v=${showreelVideoId}` : '');
+  const { showreelVideoUrl, showreelThumbnailUrl, updateShowreel } = usePortfolio();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoUrl, setVideoUrl] = useState(showreelVideoUrl);
+  const [thumbnailUrl, setThumbnailUrl] = useState(showreelThumbnailUrl);
 
-  const handleUrlChange = (newUrl: string) => {
-    setUrl(newUrl);
-    const id = extractYouTubeId(newUrl);
-    setVideoId(id || '');
+  const handleVideoUpload = async (file: File) => {
+    if (!isCloudinaryConfigured()) {
+      showToast('⚠️ Cloudinary not configured. Go to Settings.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Get local thumbnail
+      let localThumb = thumbnailUrl;
+      try {
+        localThumb = await extractVideoThumbnail(file);
+        setThumbnailUrl(localThumb);
+      } catch { /* ignore */ }
+
+      const result = await uploadToCloudinary(file, {
+        onProgress: setUploadProgress,
+        resourceType: 'video',
+      });
+
+      setVideoUrl(result.url);
+      setThumbnailUrl(result.thumbnailUrl || localThumb);
+      showToast('✅ Showreel video uploaded!');
+    } catch (err) {
+      showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleThumbnailUpload = async (file: File) => {
+    if (!isCloudinaryConfigured()) {
+      const reader = new FileReader();
+      reader.onload = (e) => setThumbnailUrl(e.target?.result as string);
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    try {
+      const result = await uploadToCloudinary(file, { resourceType: 'image' });
+      setThumbnailUrl(result.thumbnailUrl);
+      showToast('✅ Thumbnail uploaded!');
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (e) => setThumbnailUrl(e.target?.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const save = () => {
-    updateShowreelVideoId(videoId);
+    updateShowreel(videoUrl, thumbnailUrl);
     showToast('Showreel saved!');
   };
 
@@ -276,15 +592,40 @@ function ShowreelManager({ showToast }: { showToast: (msg: string) => void }) {
           <Save size={14} /> Save
         </button>
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Set the YouTube video that will be displayed as your featured showreel.</p>
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">YouTube URL</label>
-        <input type="text" value={url} onChange={(e) => handleUrlChange(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" />
-        {videoId && <p className="text-xs text-green-600 mt-1"><Check size={12} className="inline" /> Video ID: {videoId}</p>}
+      <p className="text-sm text-muted-foreground mb-6">Upload your showreel video that will be displayed as the featured highlight.</p>
+
+      <div className="space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+          <FileUploadZone
+            onFileSelect={handleVideoUpload}
+            label="📹 Showreel Video"
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            currentUrl={videoUrl}
+            currentThumbnail={thumbnailUrl}
+            onRemove={() => { setVideoUrl(''); setThumbnailUrl(''); }}
+          />
+        </div>
+
+        <ThumbnailUpload
+          onFileSelect={handleThumbnailUpload}
+          currentThumbnail={thumbnailUrl}
+          onRemove={() => setThumbnailUrl('')}
+        />
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, or paste direct link)</span></label>
+          <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://res.cloudinary.com/..." className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" />
+        </div>
       </div>
-      {videoId && (
-        <div className="aspect-video rounded-xl overflow-hidden border border-border max-w-2xl">
-          <iframe src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="Showreel preview" />
+
+      {/* Preview */}
+      {videoUrl && (
+        <div className="mt-6">
+          <h3 className="text-sm font-medium mb-3">Preview</h3>
+          <div className="aspect-video rounded-xl overflow-hidden border border-border bg-black">
+            <video src={videoUrl} className="w-full h-full object-contain" controls muted playsInline poster={thumbnailUrl} />
+          </div>
         </div>
       )}
     </div>
@@ -332,21 +673,97 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
 /* ===================== SETTINGS ===================== */
 function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
   const { resetAll } = usePortfolio();
+  const config = getCloudinaryConfig();
+  const [cloudName, setCloudName] = useState(config.cloudName);
+  const [uploadPreset, setUploadPreset] = useState(config.uploadPreset);
+
+  const saveCloudinary = () => {
+    setCloudinaryConfig({ cloudName, uploadPreset });
+    showToast('✅ Cloudinary config saved!');
+  };
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Settings</h2>
+
+      {/* Cloudinary Configuration */}
+      <div className="bg-card border border-border rounded-xl p-6 mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+            <Cloud size={18} className="text-blue-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm">Cloudinary Storage</h3>
+            <p className="text-xs text-muted-foreground">Required for video & image uploads</p>
+          </div>
+          {isCloudinaryConfigured() ? (
+            <span className="ml-auto px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">✓ Connected</span>
+          ) : (
+            <span className="ml-auto px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Not configured</span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Cloud Name</label>
+            <input
+              type="text"
+              value={cloudName}
+              onChange={(e) => setCloudName(e.target.value)}
+              placeholder="your-cloud-name"
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Found in Cloudinary Dashboard → Account Details</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Upload Preset</label>
+            <input
+              type="text"
+              value={uploadPreset}
+              onChange={(e) => setUploadPreset(e.target.value)}
+              placeholder="yuz_portfolio"
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Settings → Upload → Upload Presets → Add Upload Preset → Signing Mode: <strong>Unsigned</strong></p>
+          </div>
+          <button onClick={saveCloudinary} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
+            <Save size={14} /> Save Configuration
+          </button>
+        </div>
+
+        {/* Setup Guide */}
+        <div className="mt-6 pt-6 border-t border-border">
+          <h4 className="text-xs font-bold text-muted-foreground tracking-wide uppercase mb-3">Setup Guide</h4>
+          <ol className="text-xs text-muted-foreground space-y-2 list-decimal pl-4 leading-relaxed">
+            <li>Create a <strong>free account</strong> at <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">cloudinary.com</a></li>
+            <li>Go to <strong>Settings → Upload → Upload Presets</strong></li>
+            <li>Click <strong>"Add Upload Preset"</strong></li>
+            <li>Set <strong>Signing Mode</strong> to <strong>"Unsigned"</strong></li>
+            <li>Give it a name (e.g., <code className="bg-secondary px-1 rounded">yuz_portfolio</code>) and save</li>
+            <li>Copy your <strong>Cloud Name</strong> from the dashboard and paste above</li>
+            <li>Enter the upload preset name and click <strong>Save Configuration</strong></li>
+          </ol>
+          <p className="text-[10px] text-muted-foreground mt-3">
+            Free tier includes: 25 GB storage, 25 GB bandwidth/month — plenty for a portfolio!
+          </p>
+        </div>
+      </div>
+
+      {/* How it works */}
       <div className="bg-card border border-border rounded-xl p-6 mb-6">
         <h3 className="font-bold text-sm mb-3">How It Works</h3>
         <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4 leading-relaxed">
-          <li>Videos are embedded from <strong>YouTube only</strong> — no uploads needed</li>
-          <li>Paste any YouTube URL and the thumbnail + title are extracted automatically</li>
-          <li>Supported formats: youtube.com/watch?v=, youtu.be/, youtube.com/shorts/, etc.</li>
+          <li>Videos are <strong>uploaded from your device</strong> to Cloudinary cloud storage</li>
+          <li>Thumbnails are <strong>auto-generated</strong> from the first frame of your video</li>
+          <li>You can also upload a <strong>custom thumbnail</strong> image</li>
+          <li>Video duration is <strong>auto-detected</strong> from the file</li>
+          <li>Supports: MP4, MOV, WEBM, AVI and more</li>
           <li>All data is stored in your browser's localStorage</li>
           <li>Admin password is required every session (no saved login)</li>
-          <li>Rate limit: 5 login attempts per 15 minutes</li>
         </ul>
       </div>
+
+      {/* Danger Zone */}
       <div className="bg-card border border-red-200 rounded-xl p-6">
         <h3 className="font-bold text-sm mb-3 text-red-600">Danger Zone</h3>
         <p className="text-xs text-muted-foreground mb-4">Reset all portfolio data to defaults. This cannot be undone.</p>

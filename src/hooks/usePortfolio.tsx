@@ -1,4 +1,5 @@
 import { useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 import { projects as defaultProjects, portfolioOwner as defaultOwner, skills as defaultSkills, processSteps as defaultProcess, defaultShowreelVideoId } from '../models/portfolio';
 import type { Project, PortfolioOwner, Skill, ProcessStep } from '../models/types';
 
@@ -7,12 +8,13 @@ interface PortfolioData {
   portfolioOwner: PortfolioOwner;
   skills: Skill[];
   processSteps: ProcessStep[];
-  showreelVideoId: string;
+  showreelVideoUrl: string;
+  showreelThumbnailUrl: string;
   updateProjects: (projects: Project[]) => void;
   updateOwner: (owner: PortfolioOwner) => void;
   updateSkills: (skills: Skill[]) => void;
   updateProcessSteps: (steps: ProcessStep[]) => void;
-  updateShowreelVideoId: (id: string) => void;
+  updateShowreel: (videoUrl: string, thumbnailUrl: string) => void;
   resetAll: () => void;
 }
 
@@ -36,8 +38,6 @@ function saveToStorage(data: Record<string, unknown>) {
 
 const PortfolioContext = createContext<PortfolioData | null>(null);
 
-import { createContext, useContext } from 'react';
-
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const stored = loadFromStorage();
 
@@ -45,26 +45,32 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [portfolioOwner, setPortfolioOwner] = useState<PortfolioOwner>(stored?.portfolioOwner || defaultOwner);
   const [skills, setSkills] = useState<Skill[]>(stored?.skills || defaultSkills);
   const [processSteps, setProcessSteps] = useState<ProcessStep[]>(stored?.processSteps || defaultProcess);
-  const [showreelVideoId, setShowreelVideoId] = useState<string>(stored?.showreelVideoId || defaultShowreelVideoId);
+  const [showreelVideoUrl, setShowreelVideoUrl] = useState<string>(stored?.showreelVideoUrl || defaultShowreelVideoId || '');
+  const [showreelThumbnailUrl, setShowreelThumbnailUrl] = useState<string>(stored?.showreelThumbnailUrl || '');
 
   const updateProjects = useCallback((p: Project[]) => { setProjects(p); saveToStorage({ projects: p }); }, []);
   const updateOwner = useCallback((o: PortfolioOwner) => { setPortfolioOwner(o); saveToStorage({ portfolioOwner: o }); }, []);
   const updateSkills = useCallback((s: Skill[]) => { setSkills(s); saveToStorage({ skills: s }); }, []);
   const updateProcessSteps = useCallback((s: ProcessStep[]) => { setProcessSteps(s); saveToStorage({ processSteps: s }); }, []);
-  const updateShowreelVideoId = useCallback((id: string) => { setShowreelVideoId(id); saveToStorage({ showreelVideoId: id }); }, []);
+  const updateShowreel = useCallback((videoUrl: string, thumbnailUrl: string) => {
+    setShowreelVideoUrl(videoUrl);
+    setShowreelThumbnailUrl(thumbnailUrl);
+    saveToStorage({ showreelVideoUrl: videoUrl, showreelThumbnailUrl: thumbnailUrl });
+  }, []);
   const resetAll = useCallback(() => {
     setProjects(defaultProjects);
     setPortfolioOwner(defaultOwner);
     setSkills(defaultSkills);
     setProcessSteps(defaultProcess);
-    setShowreelVideoId(defaultShowreelVideoId);
+    setShowreelVideoUrl(defaultShowreelVideoId || '');
+    setShowreelThumbnailUrl('');
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (
     <PortfolioContext.Provider value={{
-      projects, portfolioOwner, skills, processSteps, showreelVideoId,
-      updateProjects, updateOwner, updateSkills, updateProcessSteps, updateShowreelVideoId, resetAll,
+      projects, portfolioOwner, skills, processSteps, showreelVideoUrl, showreelThumbnailUrl,
+      updateProjects, updateOwner, updateSkills, updateProcessSteps, updateShowreel, resetAll,
     }}>
       {children}
     </PortfolioContext.Provider>
