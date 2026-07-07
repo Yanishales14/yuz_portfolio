@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yuz-portfolio.onrender.com/sitemap.xml

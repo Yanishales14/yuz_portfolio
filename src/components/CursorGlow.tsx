@@ -6,9 +6,9 @@ export function CursorGlow() {
 
   return (
     <motion.div
-      className="fixed pointer-events-none z-[9999] w-[400px] h-[400px] rounded-full opacity-[0.07] hidden md:block"
+      className="fixed pointer-events-none z-[9999] w-[400px] h-[400px] rounded-full opacity-[0.05] hidden md:block"
       style={{
-        background: 'radial-gradient(circle, rgba(0,0,0,0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(0,0,0,0.12) 0%, transparent 70%)',
         left: x - 200,
         top: y - 200,
       }}

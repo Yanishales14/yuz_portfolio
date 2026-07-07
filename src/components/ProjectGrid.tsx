@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Eye, X, Clock, User, Wrench, ExternalLink } from 'lucide-react';
+import { Play, X, Clock, User, Wrench, ExternalLink } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
 import { getYouTubeThumbnail, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '../hooks/useYouTube';
@@ -27,17 +27,17 @@ export function ProjectGrid() {
   if (projects.length === 0) return null;
 
   return (
-    <section id="work" className="py-24 px-6 lg:px-8" ref={ref}>
+    <section id="work" className="py-28 px-6 lg:px-8" ref={ref}>
       <div className="max-w-7xl mx-auto">
         <motion.div className="mb-12" initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
           <span className="text-sm font-medium text-muted-foreground tracking-[0.2em] uppercase mb-4 block">Portfolio</span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Featured Work</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl">A selection of recent projects.</p>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Featured Work</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl">A curated selection of recent projects across commercial, documentary, and creative filmmaking.</p>
         </motion.div>
 
         <motion.div className="flex flex-wrap gap-2 mb-12" initial={{ opacity: 0, y: 20 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.2 }}>
           {categories.filter(c => activeCategories.includes(c.key)).map((cat) => (
-            <button key={cat.key} onClick={() => setSelectedCategory(cat.key)} className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedCategory === cat.key ? 'bg-foreground text-background shadow-md' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'}`}>
+            <button key={cat.key} onClick={() => setSelectedCategory(cat.key)} className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === cat.key ? 'bg-foreground text-background shadow-md' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'}`}>
               {cat.label}
             </button>
           ))}
@@ -67,7 +67,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 
   return (
     <div className="group cursor-pointer" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-      <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary border border-border mb-4 shadow-md group-hover:shadow-xl transition-shadow duration-500">
+      <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary border border-border mb-4 shadow-md group-hover:shadow-xl transition-all duration-500">
         <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
         <motion.div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3 }}>
           <motion.div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: isHovered ? 1 : 0.5, opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
@@ -97,7 +97,6 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
       <motion.div className="relative w-full max-w-4xl max-h-[90vh] bg-background rounded-3xl overflow-hidden shadow-2xl overflow-y-auto" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
         <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
 
-        {/* YouTube embed */}
         <div className="aspect-video bg-black relative">
           {embedUrl ? (
             <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={project.title} />

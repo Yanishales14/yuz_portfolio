@@ -15,16 +15,19 @@ export function FilmStrip() {
     <section className="py-12 overflow-hidden" ref={ref}>
       <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ duration: 0.8 }}>
         <div className="bg-card border-y border-border py-3">
+          {/* Top sprocket holes */}
           <div className="overflow-hidden mb-2">
             <div className="flex animate-film-strip" style={{ width: 'max-content' }}>
               {Array.from({ length: 30 }).map((_, i) => (
                 <div key={`top-${i}`} className="flex-shrink-0 flex justify-around px-4" style={{ width: '180px' }}>
-                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/15" />
-                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/15" />
+                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/10" />
+                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/10" />
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Thumbnails */}
           <div className="overflow-hidden">
             <div className="flex animate-film-strip" style={{ width: 'max-content' }}>
               {stripItems.map((project, i) => (
@@ -41,12 +44,14 @@ export function FilmStrip() {
               ))}
             </div>
           </div>
+
+          {/* Bottom sprocket holes */}
           <div className="overflow-hidden mt-2">
             <div className="flex animate-film-strip" style={{ width: 'max-content' }}>
               {Array.from({ length: 30 }).map((_, i) => (
                 <div key={`bot-${i}`} className="flex-shrink-0 flex justify-around px-4" style={{ width: '180px' }}>
-                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/15" />
-                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/15" />
+                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/10" />
+                  <div className="w-3 h-3 rounded-[2px] bg-muted-foreground/10" />
                 </div>
               ))}
             </div>

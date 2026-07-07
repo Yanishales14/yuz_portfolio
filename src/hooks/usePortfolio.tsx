@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { projects as defaultProjects, portfolioOwner as defaultOwner, skills as defaultSkills, processSteps as defaultProcess, defaultShowreelVideoId } from '../models/portfolio';
 import type { Project, PortfolioOwner, Skill, ProcessStep } from '../models/types';
 
@@ -35,6 +35,8 @@ function saveToStorage(data: Record<string, unknown>) {
 }
 
 const PortfolioContext = createContext<PortfolioData | null>(null);
+
+import { createContext, useContext } from 'react';
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const stored = loadFromStorage();

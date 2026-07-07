@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, X, Link, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, Link, Loader2 } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import { extractYouTubeId, getYouTubeThumbnail, fetchYouTubeMeta, isValidYouTubeUrl } from '../hooks/useYouTube';
@@ -25,13 +25,24 @@ export function AdminLogin({ onLogin }: { onLogin: (password: string) => { succe
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Admin Access</h1>
+          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            YUZ<span className="font-light text-muted-foreground">Studio</span>
+          </h1>
           <p className="text-sm text-muted-foreground">Enter the passphrase to manage your portfolio</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(''); }} placeholder="Enter password" className="w-full px-4 py-3 border border-border rounded-xl bg-card text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20" autoFocus />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+            placeholder="Enter password"
+            className="w-full px-4 py-3 border border-border rounded-xl bg-card text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
+            autoFocus
+          />
           {error && <p className="text-xs text-red-500">{error}</p>}
-          <button type="submit" className="w-full px-4 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">Enter</button>
+          <button type="submit" className="w-full px-4 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
+            Enter
+          </button>
         </form>
       </div>
     </div>
@@ -57,18 +68,24 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       <div className="border-b border-border bg-card sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft size={16} /> Portfolio</button>
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft size={16} /> Portfolio
+            </button>
             <span className="text-border">|</span>
             <h1 className="text-lg font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Admin</h1>
           </div>
-          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><LogOut size={14} /> Logout</button>
+          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LogOut size={14} /> Logout
+          </button>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex gap-1 mb-8">
           {tabs.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-foreground text-background' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>{tab.label}</button>
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-foreground text-background' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>
+              {tab.label}
+            </button>
           ))}
         </div>
         {activeTab === 'projects' && <ProjectsManager showToast={showToast} />}
@@ -148,11 +165,12 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{editingProject.title ? 'Edit' : 'New'} Project</h2>
           <div className="flex gap-2">
             <button onClick={() => setEditingProject(null)} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
-            <button onClick={saveProject} disabled={!editingProject.videoId} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40"><Save size={14} /> Save</button>
+            <button onClick={saveProject} disabled={!editingProject.videoId} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40">
+              <Save size={14} /> Save
+            </button>
           </div>
         </div>
 
-        {/* YouTube URL — the most important field */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
           <label className="block text-sm font-medium mb-2 text-blue-900">YouTube URL</label>
           <div className="flex gap-2">
@@ -163,7 +181,6 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
           {!editingProject.videoId && editingProject.youtubeUrl && <p className="text-xs text-red-500 mt-2">Could not detect video ID. Make sure the URL is a valid YouTube link.</p>}
         </div>
 
-        {/* Preview */}
         {thumbnail && (
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">Thumbnail Preview</label>
@@ -201,7 +218,9 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Projects ({projects.length})</h2>
-        <button onClick={addNewProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Plus size={14} /> Add Project</button>
+        <button onClick={addNewProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
+          <Plus size={14} /> Add Project
+        </button>
       </div>
       {projects.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
@@ -253,7 +272,9 @@ function ShowreelManager({ showToast }: { showToast: (msg: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Showreel</h2>
-        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Save size={14} /> Save</button>
+        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
+          <Save size={14} /> Save
+        </button>
       </div>
       <p className="text-sm text-muted-foreground mb-4">Set the YouTube video that will be displayed as your featured showreel.</p>
       <div className="mb-4">
@@ -290,7 +311,9 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Profile</h2>
-        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Save size={14} /> Save</button>
+        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
+          <Save size={14} /> Save
+        </button>
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div><label className="block text-sm font-medium mb-2">Studio Name</label><input type="text" value={owner.name} onChange={(e) => setOwner({ ...owner, name: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
@@ -321,12 +344,15 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
           <li>Supported formats: youtube.com/watch?v=, youtu.be/, youtube.com/shorts/, etc.</li>
           <li>All data is stored in your browser's localStorage</li>
           <li>Admin password is required every session (no saved login)</li>
+          <li>Rate limit: 5 login attempts per 15 minutes</li>
         </ul>
       </div>
       <div className="bg-card border border-red-200 rounded-xl p-6">
         <h3 className="font-bold text-sm mb-3 text-red-600">Danger Zone</h3>
-        <p className="text-xs text-muted-foreground mb-4">Reset all portfolio data. This cannot be undone.</p>
-        <button onClick={() => { if (confirm('Reset all data to defaults?')) { resetAll(); showToast('Data reset'); } }} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"><RotateCcw size={14} /> Reset All Data</button>
+        <p className="text-xs text-muted-foreground mb-4">Reset all portfolio data to defaults. This cannot be undone.</p>
+        <button onClick={() => { if (confirm('Reset all data to defaults?')) { resetAll(); showToast('Data reset'); } }} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600">
+          <RotateCcw size={14} /> Reset All Data
+        </button>
       </div>
     </div>
   );

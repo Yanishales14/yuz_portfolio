@@ -16,19 +16,20 @@ export function EditingProcess() {
   const { ref, isInView } = useInView(0.1);
 
   return (
-    <section id="process" className="py-24 px-6 lg:px-8" ref={ref}>
+    <section id="process" className="py-28 px-6 lg:px-8" ref={ref}>
       <div className="max-w-7xl mx-auto">
         <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
           <span className="text-sm font-medium text-muted-foreground tracking-[0.2em] uppercase mb-4 block">Workflow</span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>My Editing Process</h2>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>My Editing Process</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">From initial concept to final delivery, every step is crafted with precision.</p>
         </motion.div>
 
+        {/* Process Steps */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-20">
           {processSteps.map((step, i) => (
             <motion.div key={step.number} initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}>
               <div className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:border-foreground/10 transition-all duration-300 group h-full">
-                <div className="text-xs font-mono text-muted-foreground/50 mb-4">{step.number}</div>
+                <div className="text-xs font-mono text-muted-foreground/40 mb-4">{step.number}</div>
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-4 group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
                   {iconMap[step.icon] || <Layers size={22} />}
                 </div>

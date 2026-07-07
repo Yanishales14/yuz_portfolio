@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { cn } from '../views/ui/utils';
 
 const navLinks = [
   { label: 'Work', href: '#work' },
@@ -12,6 +11,10 @@ const navLinks = [
 
 interface NavigationProps {
   show?: boolean;
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }
 
 export function Navigation({ show = true }: NavigationProps) {
@@ -26,10 +29,11 @@ export function Navigation({ show = true }: NavigationProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change / hash change
   useEffect(() => {
-    setIsOpen(false);
-  }, [typeof window !== 'undefined' && window.location.hash]);
+    const handleHashChange = () => setIsOpen(false);
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   return (
     <motion.nav
@@ -48,7 +52,7 @@ export function Navigation({ show = true }: NavigationProps) {
           {/* Logo */}
           <a href="#" className="relative group flex items-baseline">
             <span
-              className="text-xl font-bold tracking-[-0.02em]"
+              className="text-xl font-bold tracking-[-0.03em]"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
               YUZ

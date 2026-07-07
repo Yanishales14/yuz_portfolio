@@ -15,7 +15,7 @@ export function FloatingElements() {
       {elements.map((el, i) => (
         <motion.div
           key={i}
-          className="absolute text-muted-foreground/10"
+          className="absolute text-muted-foreground/[0.06]"
           style={{ left: el.x, top: el.y }}
           animate={{
             y: [-10, 10, -10],

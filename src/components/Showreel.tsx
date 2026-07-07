@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, ExternalLink } from 'lucide-react';
+import { Play, Volume2, VolumeX, ExternalLink } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
 import { getYouTubeEmbedUrl, getYouTubeThumbnail } from '../hooks/useYouTube';
@@ -27,7 +27,7 @@ export function Showreel() {
   if (!showreelVideoId) return null;
 
   return (
-    <section id="showreel" className="py-24 px-6 lg:px-8" ref={sectionRef}>
+    <section id="showreel" className="py-28 px-6 lg:px-8" ref={sectionRef}>
       <div className="max-w-7xl mx-auto">
         <motion.div
           className="text-center mb-16"
@@ -38,7 +38,7 @@ export function Showreel() {
           <span className="text-sm font-medium text-muted-foreground tracking-[0.2em] uppercase mb-4 block">
             Featured Work
           </span>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif" }} className="text-4xl md:text-5xl font-bold">
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif" }} className="text-4xl md:text-5xl font-bold tracking-tight">
             Showreel
           </h2>
         </motion.div>
@@ -60,7 +60,7 @@ export function Showreel() {
               <>
                 {/* Thumbnail with play button */}
                 <img src={thumbnailUrl} alt="Showreel" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/30 cursor-pointer flex items-center justify-center" onClick={handlePlay}>
+                <div className="absolute inset-0 bg-black/30 cursor-pointer flex items-center justify-center group-hover:bg-black/40 transition-colors duration-300" onClick={handlePlay}>
                   <motion.button
                     className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
                     whileHover={{ scale: 1.1 }}
@@ -86,7 +86,7 @@ export function Showreel() {
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-lg px-3 py-1.5">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-white text-xs font-medium">SHOWREEL</span>
+                <span className="text-white text-xs font-medium tracking-wide">SHOWREEL</span>
               </div>
             </div>
 

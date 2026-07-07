@@ -40,9 +40,8 @@ export function BeforeAfter() {
   };
 
   return (
-    <section className="py-24 px-6 lg:px-8 bg-card" ref={ref}>
+    <section className="py-28 px-6 lg:px-8 bg-card" ref={ref}>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -52,7 +51,7 @@ export function BeforeAfter() {
           <span className="text-sm font-medium text-muted-foreground tracking-[0.2em] uppercase mb-4 block">
             Color Grading
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Before & After
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -60,7 +59,6 @@ export function BeforeAfter() {
           </p>
         </motion.div>
 
-        {/* Comparison Slider */}
         <motion.div
           className="max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 40 }}
@@ -91,7 +89,7 @@ export function BeforeAfter() {
               draggable={false}
             />
 
-            {/* Before (RAW) — clipped with proper width */}
+            {/* Before (RAW) */}
             <div
               className="absolute inset-0 overflow-hidden"
               style={{ width: `${sliderPos}%` }}
@@ -115,7 +113,6 @@ export function BeforeAfter() {
               style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}
             >
               <div className="w-[2px] h-full bg-white/80 shadow-lg mx-auto" />
-              {/* Handle circle */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm shadow-xl flex items-center justify-center border border-white/50">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M7 4L3 10L7 16" stroke="#1c1917" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -148,7 +145,7 @@ export function BeforeAfter() {
             {Array.from({ length: 60 }).map((_, i) => (
               <motion.div
                 key={i}
-                className="w-[3px] bg-foreground/20 rounded-full origin-bottom"
+                className="w-[3px] bg-foreground/15 rounded-full origin-bottom"
                 animate={{
                   scaleY: [0.3, 0.3 + Math.random() * 0.7, 0.3],
                 }}
