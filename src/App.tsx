@@ -5,7 +5,6 @@ import { PortfolioProvider } from './hooks/usePortfolio';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Navigation } from './components/Navigation';
 import { Hero } from './components/Hero';
-import { Showreel } from './components/Showreel';
 import { ProjectGrid } from './components/ProjectGrid';
 import { FilmStrip } from './components/FilmStrip';
 import { About } from './components/About';
@@ -42,7 +41,6 @@ function PortfolioSite() {
       <Navigation show={!isLoading} />
       <main>
         <Hero ready={ready} />
-        <Showreel />
         <FilmStrip />
         <ProjectGrid />
         <Stats />

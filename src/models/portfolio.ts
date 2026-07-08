@@ -105,5 +105,4 @@ export const processSteps: ProcessStep[] = [
   { number: '05', title: 'Delivery', description: 'Final export optimized for every platform, from cinema to mobile.', icon: 'send' },
 ];
 
-export const defaultShowreelVideoId = '';
 export const defaultAdminPassword = 'studio2024';

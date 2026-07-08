@@ -3,10 +3,9 @@ import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image,
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, extractVideoThumbnail, getVideoDuration, formatDuration } from '../hooks/useUpload';
-import { adminRateLimiter } from '../hooks/useRateLimit';
-import type { Project, CloudinaryConfig } from '../models/types';
+import type { Project } from '../models/types';
 
-type AdminTab = 'projects' | 'profile' | 'showreel' | 'settings';
+type AdminTab = 'projects' | 'profile' | 'settings';
 
 export function AdminLogin({ onLogin }: { onLogin: (password: string) => { success: boolean; error?: string } }) {
   const [password, setPassword] = useState('');
@@ -58,7 +57,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
 
   const tabs: { key: AdminTab; label: string; icon: React.ReactNode }[] = [
     { key: 'projects', label: 'Projects', icon: <Video size={14} /> },
-    { key: 'showreel', label: 'Showreel', icon: <Video size={14} /> },
     { key: 'profile', label: 'Profile', icon: <Image size={14} /> },
     { key: 'settings', label: 'Settings', icon: <Cloud size={14} /> },
   ];
@@ -80,7 +78,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Cloudinary warning banner */}
       {!isCloudinaryConfigured() && (
         <div className="bg-amber-50 border-b border-amber-200 px-6 py-3">
           <div className="max-w-6xl mx-auto flex items-center gap-3">
@@ -101,7 +98,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
           ))}
         </div>
         {activeTab === 'projects' && <ProjectsManager showToast={showToast} />}
-        {activeTab === 'showreel' && <ShowreelManager showToast={showToast} />}
         {activeTab === 'profile' && <ProfileManager showToast={showToast} />}
         {activeTab === 'settings' && <SettingsManager showToast={showToast} />}
       </div>
@@ -138,29 +134,10 @@ function FileUploadZone({
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) onFileSelect(file);
-  }, [onFileSelect]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) onFileSelect(file);
-    // Reset input so the same file can be re-selected
-    if (inputRef.current) inputRef.current.value = '';
-  };
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);
+  const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file) onFileSelect(file); }, [onFileSelect]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if (file) onFileSelect(file); if (inputRef.current) inputRef.current.value = ''; };
 
   if (currentUrl && !isUploading) {
     return (
@@ -179,9 +156,7 @@ function FileUploadZone({
             <span className="text-xs text-muted-foreground truncate max-w-[200px]">✓ File uploaded</span>
             <div className="flex gap-2">
               <button onClick={() => inputRef.current?.click()} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 bg-secondary rounded-lg">Replace</button>
-              {onRemove && (
-                <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-600 px-2 py-1 bg-red-50 rounded-lg">Remove</button>
-              )}
+              {onRemove && <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-600 px-2 py-1 bg-red-50 rounded-lg">Remove</button>}
             </div>
           </div>
         </div>
@@ -198,32 +173,22 @@ function FileUploadZone({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !isUploading && inputRef.current?.click()}
-        className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${
-          isDragging
-            ? 'border-foreground bg-foreground/5 scale-[1.02]'
-            : 'border-border hover:border-foreground/30 hover:bg-secondary/30'
-        } ${isUploading ? 'pointer-events-none' : ''}`}
+        className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${isDragging ? 'border-foreground bg-foreground/5 scale-[1.02]' : 'border-border hover:border-foreground/30 hover:bg-secondary/30'} ${isUploading ? 'pointer-events-none' : ''}`}
       >
         <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="hidden" />
-
         {isUploading ? (
           <div className="space-y-4">
             <Loader2 size={32} className="mx-auto animate-spin text-foreground/60" />
             <div>
               <p className="text-sm font-medium mb-2">Uploading... {uploadProgress}%</p>
               <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-foreground rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
+                <div className="h-full bg-foreground rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
-              <Upload size={24} className="text-muted-foreground" />
-            </div>
+            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto"><Upload size={24} className="text-muted-foreground" /></div>
             <div>
               <p className="text-sm font-medium">Drop your file here or <span className="text-foreground underline">browse</span></p>
               <p className="text-xs text-muted-foreground mt-1">Supports MP4, MOV, WEBM, AVI • Max 100MB</p>
@@ -236,22 +201,9 @@ function FileUploadZone({
 }
 
 /* ===================== THUMBNAIL UPLOAD ===================== */
-function ThumbnailUpload({
-  onFileSelect,
-  currentThumbnail,
-  onRemove,
-}: {
-  onFileSelect: (file: File) => void;
-  currentThumbnail?: string;
-  onRemove?: () => void;
-}) {
+function ThumbnailUpload({ onFileSelect, currentThumbnail, onRemove }: { onFileSelect: (file: File) => void; currentThumbnail?: string; onRemove?: () => void; }) {
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) onFileSelect(file);
-    if (inputRef.current) inputRef.current.value = '';
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if (file) onFileSelect(file); if (inputRef.current) inputRef.current.value = ''; };
 
   return (
     <div className="space-y-2">
@@ -261,18 +213,11 @@ function ThumbnailUpload({
           <img src={currentThumbnail} alt="Thumbnail" className="w-full max-w-md aspect-video object-cover" />
           <div className="absolute top-2 right-2 flex gap-1">
             <button onClick={() => inputRef.current?.click()} className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 text-xs">✎</button>
-            {onRemove && (
-              <button onClick={onRemove} className="w-7 h-7 rounded-lg bg-red-500/80 backdrop-blur-sm text-white flex items-center justify-center hover:bg-red-600">
-                <X size={12} />
-              </button>
-            )}
+            {onRemove && <button onClick={onRemove} className="w-7 h-7 rounded-lg bg-red-500/80 backdrop-blur-sm text-white flex items-center justify-center hover:bg-red-600"><X size={12} /></button>}
           </div>
         </div>
       ) : (
-        <div
-          onClick={() => inputRef.current?.click()}
-          className="rounded-xl border-2 border-dashed border-border p-6 text-center cursor-pointer hover:border-foreground/30 hover:bg-secondary/30 transition-all"
-        >
+        <div onClick={() => inputRef.current?.click()} className="rounded-xl border-2 border-dashed border-border p-6 text-center cursor-pointer hover:border-foreground/30 hover:bg-secondary/30 transition-all">
           <Image size={20} className="mx-auto text-muted-foreground mb-2" />
           <p className="text-xs text-muted-foreground">Upload thumbnail image</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">PNG, JPG, WEBP</p>
@@ -289,53 +234,25 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploadingThumb, setIsUploadingThumb] = useState(false);
 
   const handleVideoUpload = async (file: File) => {
     if (!editingProject) return;
-
-    if (!isCloudinaryConfigured()) {
-      showToast('⚠️ Cloudinary not configured. Go to Settings.');
-      return;
-    }
+    if (!isCloudinaryConfigured()) { showToast('⚠️ Cloudinary not configured. Go to Settings.'); return; }
 
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      // Extract local thumbnail while uploading
       let localThumbnail = editingProject.thumbnailUrl;
-      try {
-        localThumbnail = await extractVideoThumbnail(file);
-      } catch { /* ignore */ }
-
-      // Get duration
+      try { localThumbnail = await extractVideoThumbnail(file); } catch { /* ignore */ }
       let duration = editingProject.duration;
-      try {
-        const dur = await getVideoDuration(file);
-        duration = formatDuration(dur);
-      } catch { /* ignore */ }
+      try { const dur = await getVideoDuration(file); duration = formatDuration(dur); } catch { /* ignore */ }
 
-      // Update with local thumbnail immediately
-      setEditingProject(prev => prev ? {
-        ...prev,
-        thumbnailUrl: localThumbnail,
-        duration: duration || prev.duration,
-      } : prev);
+      setEditingProject(prev => prev ? { ...prev, thumbnailUrl: localThumbnail, duration: duration || prev.duration } : prev);
 
-      // Upload to Cloudinary
-      const result = await uploadToCloudinary(file, {
-        onProgress: setUploadProgress,
-        resourceType: 'video',
-      });
+      const result = await uploadToCloudinary(file, { onProgress: setUploadProgress, resourceType: 'video' });
 
-      setEditingProject(prev => prev ? {
-        ...prev,
-        videoUrl: result.url,
-        thumbnailUrl: result.thumbnailUrl || localThumbnail,
-        duration: duration || formatDuration(result.duration) || prev.duration,
-      } : prev);
-
+      setEditingProject(prev => prev ? { ...prev, videoUrl: result.url, thumbnailUrl: result.thumbnailUrl || localThumbnail, duration: duration || formatDuration(result.duration) || prev.duration } : prev);
       showToast('✅ Video uploaded!');
     } catch (err) {
       showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -347,126 +264,66 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
   const handleThumbnailUpload = async (file: File) => {
     if (!editingProject) return;
-
     if (!isCloudinaryConfigured()) {
-      // Just use local preview
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev);
-      };
+      reader.onload = (e) => { setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev); };
       reader.readAsDataURL(file);
       return;
     }
-
-    setIsUploadingThumb(true);
     try {
       const result = await uploadToCloudinary(file, { resourceType: 'image' });
       setEditingProject(prev => prev ? { ...prev, thumbnailUrl: result.thumbnailUrl } : prev);
       showToast('✅ Thumbnail uploaded!');
-    } catch (err) {
-      // Fallback to local preview
+    } catch {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev);
-      };
+      reader.onload = (e) => { setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev); };
       reader.readAsDataURL(file);
       showToast('⚠️ Cloudinary upload failed, using local preview');
-    } finally {
-      setIsUploadingThumb(false);
     }
   };
 
   const saveProject = () => {
     if (!editingProject) return;
     const exists = projects.find(p => p.id === editingProject.id);
-    if (exists) {
-      updateProjects(projects.map(p => p.id === editingProject.id ? editingProject : p));
-    } else {
-      updateProjects([...projects, editingProject]);
-    }
+    if (exists) { updateProjects(projects.map(p => p.id === editingProject.id ? editingProject : p)); }
+    else { updateProjects([...projects, editingProject]); }
     setEditingProject(null);
     showToast('Project saved!');
   };
 
   const deleteProject = (id: number) => {
-    if (confirm('Delete this project?')) {
-      updateProjects(projects.filter(p => p.id !== id));
-      showToast('Project deleted');
-    }
+    if (confirm('Delete this project?')) { updateProjects(projects.filter(p => p.id !== id)); showToast('Project deleted'); }
   };
 
   const addNewProject = () => {
     const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
-    setEditingProject({
-      id: newId,
-      title: '',
-      category: 'commercial',
-      videoUrl: '',
-      thumbnailUrl: '',
-      client: '',
-      duration: '',
-      year: new Date().getFullYear().toString(),
-      description: '',
-      software: ['Premiere Pro'],
-      role: 'Editor',
-    });
+    setEditingProject({ id: newId, title: '', category: 'commercial', videoUrl: '', thumbnailUrl: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: ['Premiere Pro'], role: 'Editor' });
   };
 
   if (editingProject) {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            {editingProject.videoUrl || editingProject.thumbnailUrl ? 'Edit' : 'New'} Project
-          </h2>
+          <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{editingProject.videoUrl || editingProject.thumbnailUrl ? 'Edit' : 'New'} Project</h2>
           <div className="flex gap-2">
             <button onClick={() => setEditingProject(null)} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
-            <button onClick={saveProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
-              <Save size={14} /> Save
-            </button>
+            <button onClick={saveProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Save size={14} /> Save</button>
           </div>
         </div>
 
-        {/* Video Upload */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-          <FileUploadZone
-            onFileSelect={handleVideoUpload}
-            label="📹 Video File"
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-            currentUrl={editingProject.videoUrl}
-            currentThumbnail={editingProject.thumbnailUrl}
-            onRemove={() => setEditingProject({ ...editingProject, videoUrl: '' })}
-          />
+          <FileUploadZone onFileSelect={handleVideoUpload} label="📹 Video File" isUploading={isUploading} uploadProgress={uploadProgress} currentUrl={editingProject.videoUrl} currentThumbnail={editingProject.thumbnailUrl} onRemove={() => setEditingProject({ ...editingProject, videoUrl: '' })} />
         </div>
 
-        {/* Thumbnail Upload */}
         <div className="mb-6">
-          <ThumbnailUpload
-            onFileSelect={handleThumbnailUpload}
-            currentThumbnail={editingProject.thumbnailUrl}
-            onRemove={() => setEditingProject({ ...editingProject, thumbnailUrl: '' })}
-          />
+          <ThumbnailUpload onFileSelect={handleThumbnailUpload} currentThumbnail={editingProject.thumbnailUrl} onRemove={() => setEditingProject({ ...editingProject, thumbnailUrl: '' })} />
         </div>
 
-        {/* Project Details */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Title</label>
-            <input type="text" value={editingProject.title} onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="My Amazing Project" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Category</label>
-            <select value={editingProject.category} onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value as Project['category'] })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card">
-              <option value="commercial">Commercial</option>
-              <option value="documentary">Documentary</option>
-              <option value="music">Music Video</option>
-              <option value="corporate">Corporate</option>
-              <option value="short">Short Film</option>
-            </select>
-          </div>
+          <div><label className="block text-sm font-medium mb-2">Title</label><input type="text" value={editingProject.title} onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="My Amazing Project" /></div>
+          <div><label className="block text-sm font-medium mb-2">Category</label><select value={editingProject.category} onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value as Project['category'] })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card"><option value="commercial">Commercial</option><option value="documentary">Documentary</option><option value="music">Music Video</option><option value="corporate">Corporate</option><option value="short">Short Film</option></select></div>
           <div><label className="block text-sm font-medium mb-2">Client</label><input type="text" value={editingProject.client} onChange={(e) => setEditingProject({ ...editingProject, client: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
-          <div><label className="block text-sm font-medium mb-2">Duration <span className="font-normal text-muted-foreground">(auto-filled from video)</span></label><input type="text" value={editingProject.duration} onChange={(e) => setEditingProject({ ...editingProject, duration: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="2:30" /></div>
+          <div><label className="block text-sm font-medium mb-2">Duration <span className="font-normal text-muted-foreground">(auto-filled)</span></label><input type="text" value={editingProject.duration} onChange={(e) => setEditingProject({ ...editingProject, duration: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="2:30" /></div>
           <div><label className="block text-sm font-medium mb-2">Year</label><input type="text" value={editingProject.year} onChange={(e) => setEditingProject({ ...editingProject, year: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div><label className="block text-sm font-medium mb-2">Role</label><input type="text" value={editingProject.role} onChange={(e) => setEditingProject({ ...editingProject, role: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Software (comma-separated)</label><input type="text" value={editingProject.software.join(', ')} onChange={(e) => setEditingProject({ ...editingProject, software: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="Premiere Pro, After Effects" /></div>
@@ -481,9 +338,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Projects ({projects.length})</h2>
-        <button onClick={addNewProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
-          <Plus size={14} /> Add Project
-        </button>
+        <button onClick={addNewProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Plus size={14} /> Add Project</button>
       </div>
       {projects.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
@@ -498,134 +353,16 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
               {project.thumbnailUrl ? (
                 <img src={project.thumbnailUrl} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" />
               ) : (
-                <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Video size={16} className="text-muted-foreground" />
-                </div>
+                <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0"><Video size={16} className="text-muted-foreground" /></div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{project.title || 'Untitled'}</p>
-                <p className="text-xs text-muted-foreground">
-                  {project.client} • {project.year} • {project.category}
-                  {project.videoUrl && ' • ✅ Video'}
-                </p>
+                <p className="text-xs text-muted-foreground">{project.client} • {project.year} • {project.category}{project.videoUrl && ' • ✅ Video'}</p>
               </div>
               <button onClick={() => setEditingProject({ ...project })} className="px-3 py-1.5 text-xs font-medium bg-secondary rounded-lg hover:bg-secondary/80">Edit</button>
               <button onClick={() => deleteProject(project.id)} className="p-1.5 text-muted-foreground hover:text-red-500"><Trash2 size={14} /></button>
             </div>
           ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ===================== SHOWREEL ===================== */
-function ShowreelManager({ showToast }: { showToast: (msg: string) => void }) {
-  const { showreelVideoUrl, showreelThumbnailUrl, updateShowreel } = usePortfolio();
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [videoUrl, setVideoUrl] = useState(showreelVideoUrl);
-  const [thumbnailUrl, setThumbnailUrl] = useState(showreelThumbnailUrl);
-
-  const handleVideoUpload = async (file: File) => {
-    if (!isCloudinaryConfigured()) {
-      showToast('⚠️ Cloudinary not configured. Go to Settings.');
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      // Get local thumbnail
-      let localThumb = thumbnailUrl;
-      try {
-        localThumb = await extractVideoThumbnail(file);
-        setThumbnailUrl(localThumb);
-      } catch { /* ignore */ }
-
-      const result = await uploadToCloudinary(file, {
-        onProgress: setUploadProgress,
-        resourceType: 'video',
-      });
-
-      setVideoUrl(result.url);
-      setThumbnailUrl(result.thumbnailUrl || localThumb);
-      showToast('✅ Showreel video uploaded!');
-    } catch (err) {
-      showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
-  const handleThumbnailUpload = async (file: File) => {
-    if (!isCloudinaryConfigured()) {
-      const reader = new FileReader();
-      reader.onload = (e) => setThumbnailUrl(e.target?.result as string);
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    try {
-      const result = await uploadToCloudinary(file, { resourceType: 'image' });
-      setThumbnailUrl(result.thumbnailUrl);
-      showToast('✅ Thumbnail uploaded!');
-    } catch {
-      const reader = new FileReader();
-      reader.onload = (e) => setThumbnailUrl(e.target?.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const save = () => {
-    updateShowreel(videoUrl, thumbnailUrl);
-    showToast('Showreel saved!');
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Showreel</h2>
-        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
-          <Save size={14} /> Save
-        </button>
-      </div>
-      <p className="text-sm text-muted-foreground mb-6">Upload your showreel video that will be displayed as the featured highlight.</p>
-
-      <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-          <FileUploadZone
-            onFileSelect={handleVideoUpload}
-            label="📹 Showreel Video"
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-            currentUrl={videoUrl}
-            currentThumbnail={thumbnailUrl}
-            onRemove={() => { setVideoUrl(''); setThumbnailUrl(''); }}
-          />
-        </div>
-
-        <ThumbnailUpload
-          onFileSelect={handleThumbnailUpload}
-          currentThumbnail={thumbnailUrl}
-          onRemove={() => setThumbnailUrl('')}
-        />
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, or paste direct link)</span></label>
-          <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://res.cloudinary.com/..." className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" />
-        </div>
-      </div>
-
-      {/* Preview */}
-      {videoUrl && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Preview</h3>
-          <div className="aspect-video rounded-xl overflow-hidden border border-border bg-black">
-            <video src={videoUrl} className="w-full h-full object-contain" controls muted playsInline poster={thumbnailUrl} />
-          </div>
         </div>
       )}
     </div>
@@ -640,10 +377,7 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
 
   const save = () => {
     updateOwner(owner);
-    const parsedSkills = skillText.split('\n').map(line => {
-      const [name, level] = line.split(':').map(s => s.trim());
-      return { name: name || '', level: parseInt(level) || 50 };
-    }).filter(s => s.name);
+    const parsedSkills = skillText.split('\n').map(line => { const [name, level] = line.split(':').map(s => s.trim()); return { name: name || '', level: parseInt(level) || 50 }; }).filter(s => s.name);
     updateSkills(parsedSkills);
     showToast('Profile saved!');
   };
@@ -652,19 +386,14 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Profile</h2>
-        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
-          <Save size={14} /> Save
-        </button>
+        <button onClick={save} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Save size={14} /> Save</button>
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div><label className="block text-sm font-medium mb-2">Studio Name</label><input type="text" value={owner.name} onChange={(e) => setOwner({ ...owner, name: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
         <div><label className="block text-sm font-medium mb-2">Title</label><input type="text" value={owner.title} onChange={(e) => setOwner({ ...owner, title: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
         <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Bio</label><textarea value={owner.bio} onChange={(e) => setOwner({ ...owner, bio: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[100px]" /></div>
         <div><label className="block text-sm font-medium mb-2">Experience (years)</label><input type="number" value={owner.experience} onChange={(e) => setOwner({ ...owner, experience: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Skills <span className="font-normal text-muted-foreground">(one per line: Name:level)</span></label>
-          <textarea value={skillText} onChange={(e) => setSkillText(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[140px] font-mono text-xs" placeholder="Premiere Pro:95&#10;After Effects:85" />
-        </div>
+        <div><label className="block text-sm font-medium mb-2">Skills <span className="font-normal text-muted-foreground">(one per line: Name:level)</span></label><textarea value={skillText} onChange={(e) => setSkillText(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[140px] font-mono text-xs" placeholder="Premiere Pro:95&#10;After Effects:85" /></div>
       </div>
     </div>
   );
@@ -677,61 +406,23 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
   const [cloudName, setCloudName] = useState(config.cloudName);
   const [uploadPreset, setUploadPreset] = useState(config.uploadPreset);
 
-  const saveCloudinary = () => {
-    setCloudinaryConfig({ cloudName, uploadPreset });
-    showToast('✅ Cloudinary config saved!');
-  };
+  const saveCloudinary = () => { setCloudinaryConfig({ cloudName, uploadPreset }); showToast('✅ Cloudinary config saved!'); };
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Settings</h2>
 
-      {/* Cloudinary Configuration */}
       <div className="bg-card border border-border rounded-xl p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-            <Cloud size={18} className="text-blue-600" />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm">Cloudinary Storage</h3>
-            <p className="text-xs text-muted-foreground">Required for video & image uploads</p>
-          </div>
-          {isCloudinaryConfigured() ? (
-            <span className="ml-auto px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">✓ Connected</span>
-          ) : (
-            <span className="ml-auto px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Not configured</span>
-          )}
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center"><Cloud size={18} className="text-blue-600" /></div>
+          <div><h3 className="font-bold text-sm">Cloudinary Storage</h3><p className="text-xs text-muted-foreground">Required for video & image uploads</p></div>
+          {isCloudinaryConfigured() ? <span className="ml-auto px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">✓ Connected</span> : <span className="ml-auto px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Not configured</span>}
         </div>
-
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Cloud Name</label>
-            <input
-              type="text"
-              value={cloudName}
-              onChange={(e) => setCloudName(e.target.value)}
-              placeholder="your-cloud-name"
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono"
-            />
-            <p className="text-[10px] text-muted-foreground mt-1">Found in Cloudinary Dashboard → Account Details</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Upload Preset</label>
-            <input
-              type="text"
-              value={uploadPreset}
-              onChange={(e) => setUploadPreset(e.target.value)}
-              placeholder="yuz_portfolio"
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono"
-            />
-            <p className="text-[10px] text-muted-foreground mt-1">Settings → Upload → Upload Presets → Add Upload Preset → Signing Mode: <strong>Unsigned</strong></p>
-          </div>
-          <button onClick={saveCloudinary} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90">
-            <Save size={14} /> Save Configuration
-          </button>
+          <div><label className="block text-sm font-medium mb-2">Cloud Name</label><input type="text" value={cloudName} onChange={(e) => setCloudName(e.target.value)} placeholder="your-cloud-name" className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono" /><p className="text-[10px] text-muted-foreground mt-1">Found in Cloudinary Dashboard → Account Details</p></div>
+          <div><label className="block text-sm font-medium mb-2">Upload Preset</label><input type="text" value={uploadPreset} onChange={(e) => setUploadPreset(e.target.value)} placeholder="yuz_portfolio" className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono" /><p className="text-[10px] text-muted-foreground mt-1">Settings → Upload → Upload Presets → Add Upload Preset → Signing Mode: <strong>Unsigned</strong></p></div>
+          <button onClick={saveCloudinary} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Save size={14} /> Save Configuration</button>
         </div>
-
-        {/* Setup Guide */}
         <div className="mt-6 pt-6 border-t border-border">
           <h4 className="text-xs font-bold text-muted-foreground tracking-wide uppercase mb-3">Setup Guide</h4>
           <ol className="text-xs text-muted-foreground space-y-2 list-decimal pl-4 leading-relaxed">
@@ -743,13 +434,10 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
             <li>Copy your <strong>Cloud Name</strong> from the dashboard and paste above</li>
             <li>Enter the upload preset name and click <strong>Save Configuration</strong></li>
           </ol>
-          <p className="text-[10px] text-muted-foreground mt-3">
-            Free tier includes: 25 GB storage, 25 GB bandwidth/month — plenty for a portfolio!
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-3">Free tier includes: 25 GB storage, 25 GB bandwidth/month — plenty for a portfolio!</p>
         </div>
       </div>
 
-      {/* How it works */}
       <div className="bg-card border border-border rounded-xl p-6 mb-6">
         <h3 className="font-bold text-sm mb-3">How It Works</h3>
         <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4 leading-relaxed">
@@ -763,13 +451,10 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
         </ul>
       </div>
 
-      {/* Danger Zone */}
       <div className="bg-card border border-red-200 rounded-xl p-6">
         <h3 className="font-bold text-sm mb-3 text-red-600">Danger Zone</h3>
         <p className="text-xs text-muted-foreground mb-4">Reset all portfolio data to defaults. This cannot be undone.</p>
-        <button onClick={() => { if (confirm('Reset all data to defaults?')) { resetAll(); showToast('Data reset'); } }} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600">
-          <RotateCcw size={14} /> Reset All Data
-        </button>
+        <button onClick={() => { if (confirm('Reset all data to defaults?')) { resetAll(); showToast('Data reset'); } }} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"><RotateCcw size={14} /> Reset All Data</button>
       </div>
     </div>
   );
