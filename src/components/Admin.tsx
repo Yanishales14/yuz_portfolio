@@ -191,7 +191,7 @@ function FileUploadZone({
             <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto"><Upload size={24} className="text-muted-foreground" /></div>
             <div>
               <p className="text-sm font-medium">Drop your file here or <span className="text-foreground underline">browse</span></p>
-              <p className="text-xs text-muted-foreground mt-1">Supports MP4, MOV, WEBM, AVI • Max 100MB</p>
+              <p className="text-xs text-muted-foreground mt-1">Supports MP4, MOV, WEBM, AVI • No size limit</p>
             </div>
           </div>
         )}
