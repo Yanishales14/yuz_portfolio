@@ -68,7 +68,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
     <div className="group cursor-pointer" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary border border-border mb-4 shadow-md group-hover:shadow-xl transition-all duration-500">
         {thumbnail ? (
-          <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+          <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" crossOrigin="anonymous" referrerPolicy="no-referrer" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
             <Play size={32} className="text-muted-foreground/30" />
@@ -190,7 +190,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           ) : project.thumbnailUrl ? (
             /* No video uploaded — show thumbnail with overlay message */
             <div className="w-full h-full relative">
-              <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
+              <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mb-3">
                   <Play size={24} className="text-white/40 ml-1" fill="currentColor" />
