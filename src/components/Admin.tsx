@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowDown, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, extractVideoThumbnail, getVideoDuration, formatDuration } from '../hooks/useUpload';
@@ -30,18 +30,9 @@ export function AdminLogin({ onLogin }: { onLogin: (password: string) => { succe
           <p className="text-sm text-muted-foreground">Enter the passphrase to manage your portfolio</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(''); }}
-            placeholder="Enter password"
-            className="w-full px-4 py-3 border border-border rounded-xl bg-card text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
-            autoFocus
-          />
+          <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(''); }} placeholder="Enter password" className="w-full px-4 py-3 border border-border rounded-xl bg-card text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20" autoFocus />
           {error && <p className="text-xs text-red-500">{error}</p>}
-          <button type="submit" className="w-full px-4 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
-            Enter
-          </button>
+          <button type="submit" className="w-full px-4 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">Enter</button>
         </form>
       </div>
     </div>
@@ -66,15 +57,11 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       <div className="border-b border-border bg-card sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft size={16} /> Portfolio
-            </button>
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft size={16} /> Portfolio</button>
             <span className="text-border">|</span>
             <h1 className="text-lg font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Admin</h1>
           </div>
-          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <LogOut size={14} /> Logout
-          </button>
+          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><LogOut size={14} /> Logout</button>
         </div>
       </div>
 
@@ -112,28 +99,11 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
 }
 
 /* ===================== FILE UPLOAD ZONE ===================== */
-function FileUploadZone({
-  onFileSelect,
-  accept = 'video/*,image/*',
-  label = 'Upload Video',
-  isUploading,
-  uploadProgress,
-  currentUrl,
-  currentThumbnail,
-  onRemove,
-}: {
-  onFileSelect: (file: File) => void;
-  accept?: string;
-  label?: string;
-  isUploading?: boolean;
-  uploadProgress?: number;
-  currentUrl?: string;
-  currentThumbnail?: string;
-  onRemove?: () => void;
+function FileUploadZone({ onFileSelect, accept = 'video/*,image/*', label = 'Upload Video', isUploading, uploadProgress, currentUrl, currentThumbnail, onRemove }: {
+  onFileSelect: (file: File) => void; accept?: string; label?: string; isUploading?: boolean; uploadProgress?: number; currentUrl?: string; currentThumbnail?: string; onRemove?: () => void;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }, []);
   const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);
   const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file) onFileSelect(file); }, [onFileSelect]);
@@ -147,9 +117,7 @@ function FileUploadZone({
           {currentThumbnail && (
             <div className="aspect-video">
               <img src={currentThumbnail} alt="Preview" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <Video size={32} className="text-white/60" />
-              </div>
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Video size={32} className="text-white/60" /></div>
             </div>
           )}
           <div className="p-3 flex items-center justify-between">
@@ -168,22 +136,15 @@ function FileUploadZone({
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium">{label}</label>
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => !isUploading && inputRef.current?.click()}
-        className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${isDragging ? 'border-foreground bg-foreground/5 scale-[1.02]' : 'border-border hover:border-foreground/30 hover:bg-secondary/30'} ${isUploading ? 'pointer-events-none' : ''}`}
-      >
+      <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => !isUploading && inputRef.current?.click()}
+        className={`relative rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200 ${isDragging ? 'border-foreground bg-foreground/5 scale-[1.02]' : 'border-border hover:border-foreground/30 hover:bg-secondary/30'} ${isUploading ? 'pointer-events-none' : ''}`}>
         <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="hidden" />
         {isUploading ? (
           <div className="space-y-4">
             <Loader2 size={32} className="mx-auto animate-spin text-foreground/60" />
             <div>
               <p className="text-sm font-medium mb-2">Uploading... {uploadProgress}%</p>
-              <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-foreground rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-              </div>
+              <div className="w-full h-2 bg-secondary rounded-full overflow-hidden"><div className="h-full bg-foreground rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} /></div>
             </div>
           </div>
         ) : (
@@ -238,28 +199,19 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
   const handleVideoUpload = async (file: File) => {
     if (!editingProject) return;
     if (!isCloudinaryConfigured()) { showToast('⚠️ Cloudinary not configured. Go to Settings.'); return; }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
+    setIsUploading(true); setUploadProgress(0);
     try {
       let localThumbnail = editingProject.thumbnailUrl;
       try { localThumbnail = await extractVideoThumbnail(file); } catch { /* ignore */ }
       let duration = editingProject.duration;
       try { const dur = await getVideoDuration(file); duration = formatDuration(dur); } catch { /* ignore */ }
-
       setEditingProject(prev => prev ? { ...prev, thumbnailUrl: localThumbnail, duration: duration || prev.duration } : prev);
-
       const result = await uploadToCloudinary(file, { onProgress: setUploadProgress, resourceType: 'video' });
-
       setEditingProject(prev => prev ? { ...prev, videoUrl: result.url, thumbnailUrl: result.thumbnailUrl || localThumbnail, duration: duration || formatDuration(result.duration) || prev.duration } : prev);
       showToast('✅ Video uploaded!');
     } catch (err) {
       showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
+    } finally { setIsUploading(false); setUploadProgress(0); }
   };
 
   const handleThumbnailUpload = async (file: File) => {
@@ -267,8 +219,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     if (!isCloudinaryConfigured()) {
       const reader = new FileReader();
       reader.onload = (e) => { setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev); };
-      reader.readAsDataURL(file);
-      return;
+      reader.readAsDataURL(file); return;
     }
     try {
       const result = await uploadToCloudinary(file, { resourceType: 'image' });
@@ -278,7 +229,6 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
       const reader = new FileReader();
       reader.onload = (e) => { setEditingProject(prev => prev ? { ...prev, thumbnailUrl: e.target?.result as string } : prev); };
       reader.readAsDataURL(file);
-      showToast('⚠️ Cloudinary upload failed, using local preview');
     }
   };
 
@@ -287,17 +237,25 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     const exists = projects.find(p => p.id === editingProject.id);
     if (exists) { updateProjects(projects.map(p => p.id === editingProject.id ? editingProject : p)); }
     else { updateProjects([...projects, editingProject]); }
-    setEditingProject(null);
-    showToast('Project saved!');
+    setEditingProject(null); showToast('Project saved!');
   };
 
   const deleteProject = (id: number) => {
     if (confirm('Delete this project?')) { updateProjects(projects.filter(p => p.id !== id)); showToast('Project deleted'); }
   };
 
+  const moveProject = (index: number, direction: 'up' | 'down') => {
+    const newProjects = [...projects];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newProjects.length) return;
+    [newProjects[index], newProjects[targetIndex]] = [newProjects[targetIndex], newProjects[index]];
+    updateProjects(newProjects);
+    showToast(`Moved ${direction}`);
+  };
+
   const addNewProject = () => {
     const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
-    setEditingProject({ id: newId, title: '', category: 'commercial', videoUrl: '', thumbnailUrl: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: ['Premiere Pro'], role: 'Editor' });
+    setEditingProject({ id: newId, title: '', category: 'commercial', videoUrl: '', thumbnailUrl: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: [], role: 'Editor' });
   };
 
   if (editingProject) {
@@ -326,7 +284,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
           <div><label className="block text-sm font-medium mb-2">Duration <span className="font-normal text-muted-foreground">(auto-filled)</span></label><input type="text" value={editingProject.duration} onChange={(e) => setEditingProject({ ...editingProject, duration: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="2:30" /></div>
           <div><label className="block text-sm font-medium mb-2">Year</label><input type="text" value={editingProject.year} onChange={(e) => setEditingProject({ ...editingProject, year: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div><label className="block text-sm font-medium mb-2">Role</label><input type="text" value={editingProject.role} onChange={(e) => setEditingProject({ ...editingProject, role: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
-          <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Software (comma-separated)</label><input type="text" value={editingProject.software.join(', ')} onChange={(e) => setEditingProject({ ...editingProject, software: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="Premiere Pro, After Effects" /></div>
+          <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Software</label><input type="text" value={editingProject.software.join(', ')} onChange={(e) => setEditingProject({ ...editingProject, software: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="Premiere Pro, After Effects, DaVinci Resolve" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Description</label><textarea value={editingProject.description} onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[100px]" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, or paste direct .mp4 link)</span></label><input type="text" value={editingProject.videoUrl} onChange={(e) => setEditingProject({ ...editingProject, videoUrl: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" placeholder="https://res.cloudinary.com/..." /></div>
         </div>
@@ -340,6 +298,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
         <h2 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Projects ({projects.length})</h2>
         <button onClick={addNewProject} className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90"><Plus size={14} /> Add Project</button>
       </div>
+      <p className="text-xs text-muted-foreground mb-4">Use ↑ ↓ arrows to reorder projects. First project appears at the top of your portfolio.</p>
       {projects.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Video size={32} className="mx-auto mb-4 opacity-30" />
@@ -347,18 +306,36 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
           <p className="text-sm">Upload your first video to get started.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {projects.map((project) => (
-            <div key={project.id} className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-sm transition-shadow">
+        <div className="space-y-2">
+          {projects.map((project, index) => (
+            <div key={project.id} className="flex items-center gap-3 p-4 bg-card border border-border rounded-xl hover:shadow-sm transition-shadow">
+              {/* Position number */}
+              <span className="text-xs font-mono text-muted-foreground/50 w-5 text-center shrink-0">{index + 1}</span>
+
+              {/* Reorder buttons */}
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <button onClick={() => moveProject(index, 'up')} disabled={index === 0} className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 disabled:cursor-default transition-colors" aria-label="Move up">
+                  <ArrowUp size={12} />
+                </button>
+                <button onClick={() => moveProject(index, 'down')} disabled={index === projects.length - 1} className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 disabled:cursor-default transition-colors" aria-label="Move down">
+                  <ArrowDown size={12} />
+                </button>
+              </div>
+
+              {/* Thumbnail */}
               {project.thumbnailUrl ? (
                 <img src={project.thumbnailUrl} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" />
               ) : (
                 <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0"><Video size={16} className="text-muted-foreground" /></div>
               )}
+
+              {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{project.title || 'Untitled'}</p>
-                <p className="text-xs text-muted-foreground">{project.client} • {project.year} • {project.category}{project.videoUrl && ' • ✅ Video'}</p>
+                <p className="text-xs text-muted-foreground">{project.client || 'No client'} • {project.year} • {project.category}{project.videoUrl && ' • ✅ Video'}</p>
               </div>
+
+              {/* Actions */}
               <button onClick={() => setEditingProject({ ...project })} className="px-3 py-1.5 text-xs font-medium bg-secondary rounded-lg hover:bg-secondary/80">Edit</button>
               <button onClick={() => deleteProject(project.id)} className="p-1.5 text-muted-foreground hover:text-red-500"><Trash2 size={14} /></button>
             </div>

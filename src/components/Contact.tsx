@@ -66,10 +66,10 @@ export function Contact() {
               <p className="text-sm text-muted-foreground">{portfolioOwner.title}</p>
             </div>
             <div className="flex items-center gap-6">
-              <a href="#work" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Work</a>
-              <a href="#about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</a>
-              <a href="#process" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Process</a>
-              <a href="#contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a>
+              <button onClick={() => document.getElementById('work')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Work</button>
+              <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</button>
+              <button onClick={() => document.getElementById('process')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Process</button>
+              <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</button>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center">

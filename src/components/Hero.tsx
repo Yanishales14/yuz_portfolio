@@ -62,12 +62,12 @@ export function Hero({ ready = true }: HeroProps) {
         </motion.p>
 
         <motion.div className="flex flex-wrap items-center justify-center gap-4" initial={{ opacity: 0, y: 20 }} animate={animate ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}>
-          <motion.a href="#work" className="group flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-2xl font-medium shadow-lg hover:shadow-xl transition-shadow" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={() => { const el = document.getElementById('work'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="group flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-2xl font-medium shadow-lg hover:shadow-xl transition-shadow" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             View My Work
-          </motion.a>
-          <motion.a href="#contact" className="px-8 py-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl font-medium hover:bg-white/80 transition-colors shadow-sm" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          </motion.button>
+          <motion.button onClick={() => { const el = document.getElementById('contact'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="px-8 py-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl font-medium hover:bg-white/80 transition-colors shadow-sm" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             Get in Touch
-          </motion.a>
+          </motion.button>
         </motion.div>
 
         <motion.div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" initial={{ opacity: 0 }} animate={animate ? { opacity: 1 } : {}} transition={{ delay: 1.2, duration: 1 }}>

@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Work', href: '#work' },
-  { label: 'About', href: '#about' },
-  { label: 'Process', href: '#process' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Work', section: 'work' },
+  { label: 'About', section: 'about' },
+  { label: 'Process', section: 'process' },
+  { label: 'Contact', section: 'contact' },
 ];
 
 interface NavigationProps {
@@ -29,10 +29,14 @@ export function Navigation({ show = true }: NavigationProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const handleHashChange = () => setIsOpen(false);
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+  const scrollToSection = useCallback((sectionId: string) => {
+    setIsOpen(false);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navHeight = 80;
+      const top = element.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   }, []);
 
   return (
@@ -50,7 +54,7 @@ export function Navigation({ show = true }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="#" className="relative group flex items-baseline">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="relative group flex items-baseline">
             <span
               className="text-xl font-bold tracking-[-0.03em]"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -58,25 +62,25 @@ export function Navigation({ show = true }: NavigationProps) {
               YUZ
             </span>
             <span className="text-xl font-light text-muted-foreground ml-1">Studio</span>
-          </a>
+          </button>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
+              <button
+                key={link.section}
+                onClick={() => scrollToSection(link.section)}
                 className="px-4 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
-            <a
-              href="#contact"
+            <button
+              onClick={() => scrollToSection('contact')}
               className="ml-3 px-5 py-2 bg-foreground text-background text-[13px] font-medium rounded-xl hover:opacity-90 transition-opacity"
             >
               Hire Me
-            </a>
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -102,25 +106,23 @@ export function Navigation({ show = true }: NavigationProps) {
           >
             <div className="px-6 py-6 flex flex-col gap-1">
               {navLinks.map((link, i) => (
-                <motion.a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                <motion.button
+                  key={link.section}
+                  onClick={() => scrollToSection(link.section)}
+                  className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors text-left"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                 >
                   {link.label}
-                </motion.a>
+                </motion.button>
               ))}
-              <a
-                href="#contact"
-                onClick={() => setIsOpen(false)}
+              <button
+                onClick={() => scrollToSection('contact')}
                 className="mt-2 px-5 py-3 bg-foreground text-background text-sm font-medium rounded-xl text-center hover:opacity-90 transition-opacity"
               >
                 Hire Me
-              </a>
+              </button>
             </div>
           </motion.div>
         )}

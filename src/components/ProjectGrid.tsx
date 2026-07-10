@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Clock, User, Wrench, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { Play, X, Clock, User, Wrench } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
 import type { Project } from '../models/types';
@@ -100,50 +100,49 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 
 function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+  // Autoplay video when modal opens
+  useEffect(() => {
+    if (project.videoUrl && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Autoplay blocked by browser, that's fine — controls are visible
+      });
     }
-  };
+  }, [project.videoUrl]);
 
-  const toggleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    }
-  };
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
 
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
       <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <motion.div className="relative w-full max-w-4xl max-h-[90vh] bg-background rounded-3xl overflow-hidden shadow-2xl overflow-y-auto" initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+      <motion.div
+        ref={modalRef}
+        className="relative w-full max-w-4xl max-h-[90vh] bg-background rounded-3xl overflow-hidden shadow-2xl overflow-y-auto"
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
         <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
 
         <div className="aspect-video bg-black relative">
           {project.videoUrl ? (
-            <>
-              <video
-                ref={videoRef}
-                src={project.videoUrl}
-                className="w-full h-full object-contain"
-                controls
-                muted={isMuted}
-                playsInline
-                poster={project.thumbnailUrl}
-              />
-              <div className="absolute top-4 left-4 flex gap-2">
-                <button onClick={toggleMute} className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label={isMuted ? 'Unmute' : 'Mute'}>
-                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                </button>
-                <button onClick={toggleFullscreen} className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Fullscreen">
-                  <Maximize2 size={14} />
-                </button>
-              </div>
-            </>
+            <video
+              ref={videoRef}
+              src={project.videoUrl}
+              className="w-full h-full object-contain"
+              controls
+              playsInline
+              poster={project.thumbnailUrl}
+            />
           ) : project.thumbnailUrl ? (
             <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
           ) : (
@@ -157,11 +156,6 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="px-3 py-1 bg-secondary rounded-lg text-xs font-medium capitalize">{project.category}</span>
             {project.year && <span className="px-3 py-1 bg-secondary rounded-lg text-xs font-medium">{project.year}</span>}
-            {project.videoUrl && (
-              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium flex items-center gap-1">
-                Video Available
-              </span>
-            )}
           </div>
           <h3 className="text-2xl md:text-3xl font-bold mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{project.title}</h3>
           {project.description && <p className="text-muted-foreground leading-relaxed mb-8">{project.description}</p>}
@@ -172,8 +166,8 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           </div>
           {project.software.length > 0 && (
             <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-xs text-muted-foreground mb-3">Software Used</p>
-              <div className="flex flex-wrap gap-2">{project.software.map((sw) => <span key={sw} className="px-3 py-1.5 bg-accent/50 rounded-lg text-xs font-medium">{sw}</span>)}</div>
+              <p className="text-xs text-muted-foreground mb-2">Software Used</p>
+              <p className="text-sm text-foreground">{project.software.join(', ')}</p>
             </div>
           )}
         </div>
