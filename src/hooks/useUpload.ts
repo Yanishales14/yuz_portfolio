@@ -22,10 +22,15 @@ const CONFIG_KEYS = {
   uploadPreset: 'yuz_cloudinary_preset',
 };
 
+const DEFAULT_CLOUDINARY_CONFIG: CloudinaryConfig = {
+  cloudName: 'dkli15vin',
+  uploadPreset: 'yuz_portfolio',
+};
+
 export function getCloudinaryConfig(): CloudinaryConfig {
   return {
-    cloudName: localStorage.getItem(CONFIG_KEYS.cloudName) || '',
-    uploadPreset: localStorage.getItem(CONFIG_KEYS.uploadPreset) || '',
+    cloudName: localStorage.getItem(CONFIG_KEYS.cloudName) || DEFAULT_CLOUDINARY_CONFIG.cloudName,
+    uploadPreset: localStorage.getItem(CONFIG_KEYS.uploadPreset) || DEFAULT_CLOUDINARY_CONFIG.uploadPreset,
   };
 }
 
