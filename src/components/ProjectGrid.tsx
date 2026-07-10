@@ -100,16 +100,43 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 
 function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(true);
 
-  // Autoplay video when modal opens
-  useEffect(() => {
-    if (project.videoUrl && videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Autoplay blocked by browser, that's fine — controls are visible
+  // Try autoplay when video data loads
+  const handleVideoLoaded = () => {
+    if (videoRef.current) {
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+        setShowPlayButton(false);
+      }).catch(() => {
+        // Autoplay blocked — show play button overlay
+        setShowPlayButton(true);
       });
     }
-  }, [project.videoUrl]);
+  };
+
+  const handlePlayClick = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+        setShowPlayButton(false);
+      }).catch(() => {});
+    }
+  };
+
+  const handleVideoClick = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsPlaying(true);
+      setShowPlayButton(false);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
 
   // Close on Escape key
   useEffect(() => {
@@ -120,11 +147,19 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  // Pause video when modal closes
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+    };
+  }, []);
+
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
       <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        ref={modalRef}
         className="relative w-full max-w-4xl max-h-[90vh] bg-background rounded-3xl overflow-hidden shadow-2xl overflow-y-auto"
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -135,14 +170,30 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
 
         <div className="aspect-video bg-black relative">
           {project.videoUrl ? (
-            <video
-              ref={videoRef}
-              src={project.videoUrl}
-              className="w-full h-full object-contain"
-              controls
-              playsInline
-              poster={project.thumbnailUrl}
-            />
+            <>
+              <video
+                ref={videoRef}
+                src={project.videoUrl}
+                className="w-full h-full object-contain cursor-pointer"
+                controls={!showPlayButton}
+                muted
+                playsInline
+                autoPlay
+                poster={project.thumbnailUrl}
+                onLoadedData={handleVideoLoaded}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onClick={handleVideoClick}
+              />
+              {/* Big play button overlay when autoplay fails */}
+              {showPlayButton && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer z-10" onClick={handlePlayClick}>
+                  <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
+                    <Play size={32} className="text-foreground ml-1" fill="currentColor" />
+                  </div>
+                </div>
+              )}
+            </>
           ) : project.thumbnailUrl ? (
             <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
           ) : (
