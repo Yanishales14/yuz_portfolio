@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Clock, User, Wrench } from 'lucide-react';
+import { Play, X, Clock, User, Wrench, Volume2, VolumeX } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
 import type { Project } from '../models/types';
@@ -81,11 +81,6 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
         </motion.div>
         {project.duration && <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white rounded-lg text-xs font-medium">{project.duration}</div>}
         <div className="absolute top-3 left-3"><span className="px-2.5 py-1 bg-white/90 backdrop-blur-md text-foreground rounded-lg text-xs font-medium capitalize">{project.category}</span></div>
-        {project.videoUrl && (
-          <div className="absolute bottom-3 right-3">
-            <div className="w-2 h-2 rounded-full bg-green-400 shadow-sm" />
-          </div>
-        )}
       </div>
       <div className="px-1">
         <div className="flex items-center gap-2 mb-1.5">
@@ -101,59 +96,48 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showPlayButton, setShowPlayButton] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [hasStarted, setHasStarted] = useState(false);
+  const hasVideo = !!project.videoUrl;
 
-  // Try autoplay when video data loads
-  const handleVideoLoaded = () => {
-    if (videoRef.current) {
-      videoRef.current.play().then(() => {
-        setIsPlaying(true);
-        setShowPlayButton(false);
-      }).catch(() => {
-        // Autoplay blocked — show play button overlay
-        setShowPlayButton(true);
-      });
-    }
-  };
-
-  const handlePlayClick = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = false;
-      videoRef.current.play().then(() => {
-        setIsPlaying(true);
-        setShowPlayButton(false);
-      }).catch(() => {});
-    }
-  };
-
-  const handleVideoClick = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
+  // Start muted autoplay when modal opens and video loads
+  const handleCanPlay = () => {
+    if (!hasVideo || !videoRef.current || hasStarted) return;
+    videoRef.current.play().then(() => {
+      setHasStarted(true);
       setIsPlaying(true);
-      setShowPlayButton(false);
-    } else {
-      videoRef.current.pause();
+    }).catch(() => {
+      // Autoplay blocked — user must click play
       setIsPlaying(false);
-    }
+    });
   };
 
-  // Close on Escape key
+  // User clicks the big play button
+  const handlePlayClick = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = isMuted;
+    videoRef.current.play().then(() => {
+      setHasStarted(true);
+      setIsPlaying(true);
+    }).catch(() => {});
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
+  // Close on Escape
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  // Pause video when modal closes
+  // Pause on unmount
   useEffect(() => {
-    return () => {
-      if (videoRef.current) {
-        videoRef.current.pause();
-      }
-    };
+    return () => { videoRef.current?.pause(); };
   }, []);
 
   return (
@@ -166,36 +150,54 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
 
         <div className="aspect-video bg-black relative">
-          {project.videoUrl ? (
+          {hasVideo ? (
             <>
               <video
                 ref={videoRef}
                 src={project.videoUrl}
-                className="w-full h-full object-contain cursor-pointer"
-                controls={!showPlayButton}
-                muted
+                className="w-full h-full object-contain"
+                controls={hasStarted}
+                muted={isMuted}
                 playsInline
-                autoPlay
+                preload="auto"
                 poster={project.thumbnailUrl}
-                onLoadedData={handleVideoLoaded}
+                onCanPlay={handleCanPlay}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
-                onClick={handleVideoClick}
+                onEnded={() => setIsPlaying(false)}
               />
-              {/* Big play button overlay when autoplay fails */}
-              {showPlayButton && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer z-10" onClick={handlePlayClick}>
+
+              {/* Mute/unmute button when playing */}
+              {hasStarted && isPlaying && (
+                <button onClick={toggleMute} className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label={isMuted ? 'Unmute' : 'Mute'}>
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                </button>
+              )}
+
+              {/* Big play button overlay — shown before video starts or when paused without native controls */}
+              {!hasStarted && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 cursor-pointer z-10" onClick={handlePlayClick}>
                   <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
                     <Play size={32} className="text-foreground ml-1" fill="currentColor" />
                   </div>
+                  <p className="text-white/70 text-sm mt-4">Click to play</p>
                 </div>
               )}
             </>
           ) : project.thumbnailUrl ? (
-            <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
+            /* No video uploaded — show thumbnail with overlay message */
+            <div className="w-full h-full relative">
+              <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mb-3">
+                  <Play size={24} className="text-white/40 ml-1" fill="currentColor" />
+                </div>
+                <p className="text-white/60 text-sm">Video coming soon</p>
+              </div>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white">
               <p className="text-sm">No video uploaded yet</p>
