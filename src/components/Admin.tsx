@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { ArrowLeft, ArrowUp, ArrowDown, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
-import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, extractVideoThumbnail, getVideoDuration, formatDuration } from '../hooks/useUpload';
+import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, getVideoDuration, formatDuration } from '../hooks/useUpload';
 import type { Project } from '../models/types';
 
 type AdminTab = 'projects' | 'profile' | 'settings';
@@ -104,6 +104,7 @@ function FileUploadZone({ onFileSelect, accept = 'video/*,image/*', label = 'Upl
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [thumbError, setThumbError] = useState(false);
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }, []);
   const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);
   const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file) onFileSelect(file); }, [onFileSelect]);
@@ -113,19 +114,24 @@ function FileUploadZone({ onFileSelect, accept = 'video/*,image/*', label = 'Upl
     return (
       <div className="space-y-3">
         <label className="block text-sm font-medium">{label}</label>
-        <div className="relative rounded-xl overflow-hidden border border-border bg-secondary">
-          {currentThumbnail && (
-            <div className="aspect-video">
-              <img src={currentThumbnail} alt="Preview" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Video size={32} className="text-white/60" /></div>
-            </div>
-          )}
-          <div className="p-3 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground truncate max-w-[200px]">✓ File uploaded</span>
-            <div className="flex gap-2">
-              <button onClick={() => inputRef.current?.click()} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 bg-secondary rounded-lg">Replace</button>
-              {onRemove && <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-600 px-2 py-1 bg-red-50 rounded-lg">Remove</button>}
-            </div>
+        <div className="relative rounded-xl overflow-hidden border border-border bg-black">
+          <div className="aspect-video">
+            <video
+              src={currentUrl}
+              className="w-full h-full object-contain"
+              muted
+              playsInline
+              controls
+              poster={currentThumbnail && !thumbError ? currentThumbnail : undefined}
+              onError={() => setThumbError(true)}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-green-600 font-medium">✓ Video uploaded</span>
+          <div className="flex gap-2">
+            <button onClick={() => inputRef.current?.click()} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 bg-secondary rounded-lg">Replace</button>
+            {onRemove && <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-600 px-2 py-1 bg-red-50 rounded-lg">Remove</button>}
           </div>
         </div>
         <input ref={inputRef} type="file" accept={accept} onChange={handleChange} className="hidden" />
@@ -164,14 +170,20 @@ function FileUploadZone({ onFileSelect, accept = 'video/*,image/*', label = 'Upl
 /* ===================== THUMBNAIL UPLOAD ===================== */
 function ThumbnailUpload({ onFileSelect, currentThumbnail, onRemove }: { onFileSelect: (file: File) => void; currentThumbnail?: string; onRemove?: () => void; }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [thumbError, setThumbError] = useState(false);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if (file) onFileSelect(file); if (inputRef.current) inputRef.current.value = ''; };
+
+  // Detect if thumbnail is a data URI (local extraction) vs Cloudinary URL
+  const isDataUri = currentThumbnail?.startsWith('data:');
+  const isCloudinaryUrl = currentThumbnail?.includes('cloudinary.com') || currentThumbnail?.includes('pexels.com');
 
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium">Thumbnail</label>
-      {currentThumbnail ? (
+      {currentThumbnail && !thumbError ? (
         <div className="relative rounded-xl overflow-hidden border border-border">
-          <img src={currentThumbnail} alt="Thumbnail" className="w-full max-w-md aspect-video object-cover" />
+          <img src={currentThumbnail} alt="Thumbnail" className="w-full max-w-md aspect-video object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" onError={() => setThumbError(true)} />
+          {isDataUri && <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm">Local preview — will be replaced on upload</div>}
           <div className="absolute top-2 right-2 flex gap-1">
             <button onClick={() => inputRef.current?.click()} className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 text-xs">✎</button>
             {onRemove && <button onClick={onRemove} className="w-7 h-7 rounded-lg bg-red-500/80 backdrop-blur-sm text-white flex items-center justify-center hover:bg-red-600"><X size={12} /></button>}
@@ -201,13 +213,25 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     if (!isCloudinaryConfigured()) { showToast('⚠️ Cloudinary not configured. Go to Settings.'); return; }
     setIsUploading(true); setUploadProgress(0);
     try {
-      let localThumbnail = editingProject.thumbnailUrl;
-      try { localThumbnail = await extractVideoThumbnail(file); } catch { /* ignore */ }
-      let duration = editingProject.duration;
-      try { const dur = await getVideoDuration(file); duration = formatDuration(dur); } catch { /* ignore */ }
-      setEditingProject(prev => prev ? { ...prev, thumbnailUrl: localThumbnail, duration: duration || prev.duration } : prev);
+      // Upload to Cloudinary first
       const result = await uploadToCloudinary(file, { onProgress: setUploadProgress, resourceType: 'video' });
-      setEditingProject(prev => prev ? { ...prev, videoUrl: result.url, thumbnailUrl: result.thumbnailUrl || localThumbnail, duration: duration || formatDuration(result.duration) || prev.duration } : prev);
+      
+      // Get duration from Cloudinary result or try locally
+      let duration = editingProject.duration;
+      if (result.duration) {
+        duration = formatDuration(result.duration);
+      } else {
+        try { const dur = await getVideoDuration(file); duration = formatDuration(dur); } catch { /* ignore */ }
+      }
+      
+      // Use Cloudinary's auto-generated thumbnail (always works, always .jpg)
+      // Fall back to local extraction only if Cloudinary thumbnail fails
+      setEditingProject(prev => prev ? { 
+        ...prev, 
+        videoUrl: result.url, 
+        thumbnailUrl: result.thumbnailUrl, 
+        duration: duration || prev.duration 
+      } : prev);
       showToast('✅ Video uploaded!');
     } catch (err) {
       showToast(`❌ Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -324,7 +348,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
               {/* Thumbnail */}
               {project.thumbnailUrl ? (
-                <img src={project.thumbnailUrl} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" />
+                <img src={project.thumbnailUrl} alt="" className="w-20 h-12 rounded-lg object-cover flex-shrink-0" crossOrigin="anonymous" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <div className="w-20 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0"><Video size={16} className="text-muted-foreground" /></div>
               )}

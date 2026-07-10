@@ -90,18 +90,24 @@ export async function uploadToCloudinary(
         const resourceTypeResult = response.resource_type;
         const duration = response.duration || 0;
 
-        // Build thumbnail URL
+        // Build thumbnail URL — Cloudinary always generates JPG thumbnails for videos
         let thumbnailUrl = response.secure_url;
         if (resourceTypeResult === 'video') {
-          // Cloudinary auto-generates thumbnails for videos
-          thumbnailUrl = `https://res.cloudinary.com/${config.cloudName}/video/upload/so_0,w_800,h_450,c_fill/${publicId}.${format === 'mp4' ? 'jpg' : format}`;
+          thumbnailUrl = `https://res.cloudinary.com/${config.cloudName}/video/upload/so_0,w_800,h_450,c_fill/${publicId}.jpg`;
         } else {
           // For images, create a smaller version
           thumbnailUrl = `https://res.cloudinary.com/${config.cloudName}/image/upload/w_800,h_450,c_fill/${publicId}.${format}`;
         }
 
+        // Ensure video URL is always in a browser-compatible format (mp4)
+        let videoUrl = response.secure_url;
+        if (resourceTypeResult === 'video' && format !== 'mp4') {
+          // Replace extension with .mp4 so Cloudinary serves a browser-compatible format
+          videoUrl = `https://res.cloudinary.com/${config.cloudName}/video/upload/${publicId}.mp4`;
+        }
+
         resolve({
-          url: response.secure_url,
+          url: videoUrl,
           thumbnailUrl,
           duration,
           format: response.format,
