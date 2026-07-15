@@ -101,7 +101,7 @@
 }
 
 .animate-film-strip {
-  animation: film-strip 30s linear infinite;
+  animation: film-strip var(--film-duration, 40s) linear infinite;
 }
 
 .animate-shimmer {
