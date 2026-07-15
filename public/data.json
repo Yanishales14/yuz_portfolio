@@ -1,5 +1,19 @@
 {
-  "projects": [],
+  "projects": [
+    {
+      "id": 1,
+      "title": "How to determine best camera",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/gem7nq0glxhpc4dx676p.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/gem7nq0glxhpc4dx676p.jpg",
+      "client": "",
+      "duration": "0:22",
+      "year": "2026",
+      "description": "",
+      "software": ["Davinci"],
+      "role": "Editor"
+    }
+  ],
   "portfolioOwner": {
     "name": "YUZ",
     "title": "Video Editor & Storyteller",
