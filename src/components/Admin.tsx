@@ -289,9 +289,13 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
   const saveProject = async () => {
     if (!editingProject) return;
+    let updatedProjects: Project[];
     const exists = projects.find(p => p.id === editingProject.id);
-    if (exists) { updateProjects(projects.map(p => p.id === editingProject.id ? editingProject : p)); }
-    else { updateProjects([...projects, editingProject]); }
+    if (exists) { updatedProjects = projects.map(p => p.id === editingProject.id ? editingProject : p); }
+    else { updatedProjects = [editingProject, ...projects]; }
+    // Renumber so id always matches display order (1 = first/newest)
+    updatedProjects = updatedProjects.map((p, i) => ({ ...p, id: i + 1 }));
+    updateProjects(updatedProjects);
     setEditingProject(null);
     showToast('Project saved! Publishing...');
     const result = await publish();
@@ -320,8 +324,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
   };
 
   const addNewProject = () => {
-    const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
-    setEditingProject({ id: newId, title: '', category: 'commercial', videoUrl: '', thumbnailUrl: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: [], role: 'Editor' });
+    setEditingProject({ id: 0, title: '', category: 'commercial', videoUrl: '', thumbnailUrl: '', client: '', duration: '', year: new Date().getFullYear().toString(), description: '', software: [], role: 'Editor' });
   };
 
   if (editingProject) {

@@ -45,38 +45,32 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [processSteps, setProcessSteps] = useState<ProcessStep[]>(defaultProcess);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // On mount: load published data (data.json) for ALL visitors
-  // If admin has localStorage data, that takes priority (admin's latest draft)
+  // On mount: fetch the shared published data (data.json) for ALL visitors
+  // Then if admin has newer localStorage data, merge it in
   useEffect(() => {
     async function loadData() {
-      const stored = loadFromStorage();
-
-      // If admin has local draft data, use it (their latest unpublished changes)
-      if (stored?.projects && Array.isArray(stored.projects) && stored.projects.length > 0) {
-        setProjects(stored.projects);
-        if (stored.portfolioOwner) setPortfolioOwner(stored.portfolioOwner);
-        if (stored.skills) setSkills(stored.skills);
-        if (stored.processSteps) setProcessSteps(stored.processSteps);
-        setIsLoaded(true);
-        return;
-      }
-
-      // No local data — fetch the shared published data
+      // Step 1: Always fetch the published data first (what everyone sees)
       const published = await fetchPublishedData();
+
       if (published) {
         setProjects(published.projects as Project[]);
         if (published.portfolioOwner) setPortfolioOwner(published.portfolioOwner as PortfolioOwner);
         if (published.skills) setSkills(published.skills as Skill[]);
         if (published.processSteps) setProcessSteps(published.processSteps as ProcessStep[]);
-        // Also save to localStorage as cache
+        // Cache in localStorage
         saveToStorage(published);
-      } else {
-        // No published data either — use hardcoded defaults
-        setProjects(defaultProjects);
-        setPortfolioOwner(defaultOwner);
-        setSkills(defaultSkills);
-        setProcessSteps(defaultProcess);
       }
+
+      // Step 2: If admin has localStorage data, check if it's newer/more complete
+      const stored = loadFromStorage();
+      if (stored?.projects && Array.isArray(stored.projects) && stored.projects.length > 0) {
+        // Admin may have unpublished changes — use their localStorage data
+        setProjects(stored.projects);
+        if (stored.portfolioOwner) setPortfolioOwner(stored.portfolioOwner);
+        if (stored.skills) setSkills(stored.skills);
+        if (stored.processSteps) setProcessSteps(stored.processSteps);
+      }
+
       setIsLoaded(true);
     }
     loadData();

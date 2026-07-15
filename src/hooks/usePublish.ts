@@ -65,6 +65,13 @@ export async function publishToGitHub(data: PortfolioData): Promise<{ success: b
       return { success: false, error: err.message || 'GitHub commit failed' };
     }
 
+    // Verify the commit actually happened
+    const commitResult = await res.json();
+    if (!commitResult.commit) {
+      return { success: false, error: 'GitHub commit did not return expected result' };
+    }
+
+    // Trigger Render deploy so the new data.json is served
     await triggerDeploy();
     return { success: true };
   } catch (err) {
