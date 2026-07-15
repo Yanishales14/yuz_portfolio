@@ -1,6 +1,6 @@
 /**
- * Publish portfolio data to GitHub → Render auto-deploys
- * This makes all visitors see the same data (not just localStorage)
+ * Publish portfolio data to GitHub → Render deploys the updated data.json
+ * This makes ALL visitors see the same projects (not just admin's browser)
  */
 
 const GITHUB_API = 'https://api.github.com';
@@ -39,8 +39,26 @@ async function getFileSha(): Promise<string | null> {
   }
 }
 
+/**
+ * Wait for a GitHub commit to appear on the branch
+ */
+async function waitForCommit(expectedSha: string, maxWaitMs = 15000): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    try {
+      const res = await fetch(`${GITHUB_API}/repos/${REPO}/commits/${expectedSha}`, {
+        headers: { Authorization: `token ${_gh}` },
+      });
+      if (res.ok) return true;
+    } catch { /* ignore */ }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
+}
+
 export async function publishToGitHub(data: PortfolioData): Promise<{ success: boolean; error?: string }> {
   try {
+    // Step 1: Get current file SHA (needed to overwrite)
     const sha = await getFileSha();
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
 
@@ -51,6 +69,7 @@ export async function publishToGitHub(data: PortfolioData): Promise<{ success: b
     };
     if (sha) body.sha = sha;
 
+    // Step 2: Commit to GitHub
     const res = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${FILE_PATH}`, {
       method: 'PUT',
       headers: {
@@ -65,33 +84,68 @@ export async function publishToGitHub(data: PortfolioData): Promise<{ success: b
       return { success: false, error: err.message || 'GitHub commit failed' };
     }
 
-    // Verify the commit actually happened
     const commitResult = await res.json();
-    if (!commitResult.commit) {
-      return { success: false, error: 'GitHub commit did not return expected result' };
+    const commitSha = commitResult.commit?.sha;
+
+    // Step 3: Wait for GitHub to fully process the commit
+    if (commitSha) {
+      await waitForCommit(commitSha);
+    } else {
+      // Small delay even if we don't have the SHA
+      await new Promise(r => setTimeout(r, 2000));
     }
 
-    // Trigger Render deploy so the new data.json is served
-    await triggerDeploy();
+    // Step 4: Trigger Render deploy (now with the new commit available)
+    const deployOk = await triggerDeploy();
+
+    if (!deployOk) {
+      return { success: false, error: 'Data saved to GitHub but Render deploy trigger failed. Changes may take longer to appear.' };
+    }
+
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
   }
 }
 
-async function triggerDeploy(): Promise<void> {
-  try {
-    await fetch(`${RENDER_API}/${_renderId}/deploys`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${_renderKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ clearCache: 'clear' }),
-    });
-  } catch { /* ignore */ }
+/**
+ * Trigger a deploy on Render with retry
+ */
+async function triggerDeploy(retries = 2): Promise<boolean> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${RENDER_API}/${_renderId}/deploys`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${_renderKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clearCache: 'clear' }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'build_in_progress' || data.status === 'created') {
+          return true;
+        }
+      }
+
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    } catch {
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  }
+  return false;
 }
 
+/**
+ * Fetch the published portfolio data from data.json
+ * This is what ALL visitors see
+ */
 export async function fetchPublishedData(): Promise<PortfolioData | null> {
   try {
     const res = await fetch('/data.json?t=' + Date.now());

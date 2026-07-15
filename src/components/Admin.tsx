@@ -54,7 +54,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     const result = await publish();
     setIsPublishing(false);
     if (result.success) {
-      showToast('✅ Published! Changes will be live in 1-2 minutes.');
+      showToast('✅ Published! Your friend will see changes in 1-2 minutes.');
     } else {
       showToast(`❌ Publish failed: ${result.error || 'Unknown error'}`);
     }
@@ -298,16 +298,18 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     updateProjects(updatedProjects);
     setEditingProject(null);
     showToast('Project saved! Publishing...');
-    const result = await publish();
+    // Pass data directly to avoid stale closure
+    const result = await publish({ projects: updatedProjects, portfolioOwner, skills, processSteps });
     if (result.success) showToast('✅ Published! Live in 1-2 min.');
     else showToast('⚠️ Saved locally. Click Publish to go live.');
   };
 
   const deleteProject = async (id: number) => {
     if (confirm('Delete this project?')) {
-      updateProjects(projects.filter(p => p.id !== id));
+      const updatedProjects = projects.filter(p => p.id !== id);
+      updateProjects(updatedProjects);
       showToast('Project deleted. Publishing...');
-      const result = await publish();
+      const result = await publish({ projects: updatedProjects, portfolioOwner, skills, processSteps });
       if (result.success) showToast('✅ Published! Live in 1-2 min.');
     }
   };
@@ -319,7 +321,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     [newProjects[index], newProjects[targetIndex]] = [newProjects[targetIndex], newProjects[index]];
     updateProjects(newProjects);
     showToast(`Moved ${direction}. Publishing...`);
-    const result = await publish();
+    const result = await publish({ projects: newProjects, portfolioOwner, skills, processSteps });
     if (result.success) showToast('✅ Published! Live in 1-2 min.');
   };
 
@@ -422,11 +424,11 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
   const [skillText, setSkillText] = useState(skills.map(s => `${s.name}:${s.level}`).join('\n'));
 
   const save = async () => {
-    updateOwner(owner);
     const parsedSkills = skillText.split('\n').map(line => { const [name, level] = line.split(':').map(s => s.trim()); return { name: name || '', level: parseInt(level) || 50 }; }).filter(s => s.name);
+    updateOwner(owner);
     updateSkills(parsedSkills);
     showToast('Profile saved! Publishing...');
-    const result = await publish();
+    const result = await publish({ projects, portfolioOwner: owner, skills: parsedSkills, processSteps });
     if (result.success) showToast('✅ Published! Live in 1-2 min.');
     else showToast('⚠️ Saved locally. Click Publish to go live.');
   };

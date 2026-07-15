@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import { projects as defaultProjects, portfolioOwner as defaultOwner, skills as defaultSkills, processSteps as defaultProcess } from '../models/portfolio';
 import { fetchPublishedData, publishToGitHub, type PortfolioData } from './usePublish';
@@ -15,7 +15,7 @@ interface PortfolioDataCtx {
   updateSkills: (skills: Skill[]) => void;
   updateProcessSteps: (steps: ProcessStep[]) => void;
   resetAll: () => void;
-  publish: () => Promise<{ success: boolean; error?: string }>;
+  publish: (data?: PortfolioData) => Promise<{ success: boolean; error?: string }>;
 }
 
 const STORAGE_KEY = 'yuz_portfolio_data';
@@ -45,8 +45,20 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [processSteps, setProcessSteps] = useState<ProcessStep[]>(defaultProcess);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Use refs to always have the latest data (fixes stale closure in publish)
+  const dataRef = useRef<PortfolioData>({
+    projects: [],
+    portfolioOwner: defaultOwner,
+    skills: defaultSkills,
+    processSteps: defaultProcess,
+  });
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    dataRef.current = { projects, portfolioOwner, skills, processSteps };
+  }, [projects, portfolioOwner, skills, processSteps]);
+
   // On mount: fetch the shared published data (data.json) for ALL visitors
-  // Then if admin has newer localStorage data, merge it in
   useEffect(() => {
     async function loadData() {
       // Step 1: Always fetch the published data first (what everyone sees)
@@ -61,10 +73,9 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         saveToStorage(published);
       }
 
-      // Step 2: If admin has localStorage data, check if it's newer/more complete
+      // Step 2: If admin has localStorage data, use that (their latest unpublished changes)
       const stored = loadFromStorage();
       if (stored?.projects && Array.isArray(stored.projects) && stored.projects.length > 0) {
-        // Admin may have unpublished changes — use their localStorage data
         setProjects(stored.projects);
         if (stored.portfolioOwner) setPortfolioOwner(stored.portfolioOwner);
         if (stored.skills) setSkills(stored.skills);
@@ -89,16 +100,12 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  // Publish current data to GitHub → all visitors will see it
-  const publish = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
-    const data: PortfolioData = {
-      projects,
-      portfolioOwner,
-      skills,
-      processSteps,
-    };
+  // Publish: if data is passed directly, use it. Otherwise use latest from ref.
+  // This fixes the stale closure bug where publish() would use old state.
+  const publish = useCallback(async (overrideData?: PortfolioData): Promise<{ success: boolean; error?: string }> => {
+    const data = overrideData || dataRef.current;
     return publishToGitHub(data);
-  }, [projects, portfolioOwner, skills, processSteps]);
+  }, []);
 
   return (
     <PortfolioContext.Provider value={{
