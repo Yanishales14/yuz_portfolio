@@ -2,6 +2,21 @@
   "projects": [
     {
       "id": 1,
+      "title": "My New Amazing Project",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/mvhksmhevj74qddh4znn.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/mvhksmhevj74qddh4znn.jpg",
+      "client": "",
+      "duration": "0:22",
+      "year": "2026",
+      "description": "",
+      "software": [
+        "Davinci"
+      ],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "My Amazing Project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/dz2khvgwlf6byioczjtw.mp4",
@@ -16,7 +31,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "My new project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/srnlkor2o1evuzlfftj6.mp4",
@@ -31,7 +46,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "How to determine best camera",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/gem7nq0glxhpc4dx676p.mp4",
