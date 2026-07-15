@@ -44,17 +44,17 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   const [toast, setToast] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const { logout } = useAdminAuth();
-  const { publish } = usePortfolio();
+  const { publish, projects, portfolioOwner, skills, processSteps } = usePortfolio();
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
   const onPublish = async () => {
     setIsPublishing(true);
     showToast('📤 Publishing to website...');
-    const result = await publish();
+    const result = await publish({ projects, portfolioOwner, skills, processSteps });
     setIsPublishing(false);
     if (result.success) {
-      showToast('✅ Published! Your friend will see changes in 1-2 minutes.');
+      showToast('✅ Published! Your friend will see changes instantly.');
     } else {
       showToast(`❌ Publish failed: ${result.error || 'Unknown error'}`);
     }
@@ -90,7 +90,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
           <div className="max-w-6xl mx-auto flex items-center gap-3">
             <Globe size={14} className="text-green-600 shrink-0" />
             <p className="text-xs text-green-800">
-              <strong>Auto-publish enabled.</strong> Every save is published to your website. Changes go live in 1-2 minutes.
+              <strong>Auto-publish enabled.</strong> Every save is published to your website. Changes go live instantly for all visitors.
             </p>
           </div>
         </div>
@@ -234,7 +234,7 @@ function ThumbnailUpload({ onFileSelect, currentThumbnail, onRemove }: { onFileS
 
 /* ===================== PROJECTS ===================== */
 function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
-  const { projects, updateProjects } = usePortfolio();
+  const { projects, updateProjects, portfolioOwner, skills, processSteps, publish } = usePortfolio();
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -300,7 +300,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     showToast('Project saved! Publishing...');
     // Pass data directly to avoid stale closure
     const result = await publish({ projects: updatedProjects, portfolioOwner, skills, processSteps });
-    if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    if (result.success) showToast('✅ Published! Your friend sees it instantly.');
     else showToast('⚠️ Saved locally. Click Publish to go live.');
   };
 
@@ -310,7 +310,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
       updateProjects(updatedProjects);
       showToast('Project deleted. Publishing...');
       const result = await publish({ projects: updatedProjects, portfolioOwner, skills, processSteps });
-      if (result.success) showToast('✅ Published! Live in 1-2 min.');
+      if (result.success) showToast('✅ Published! Your friend sees it instantly.');
     }
   };
 
@@ -322,7 +322,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     updateProjects(newProjects);
     showToast(`Moved ${direction}. Publishing...`);
     const result = await publish({ projects: newProjects, portfolioOwner, skills, processSteps });
-    if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    if (result.success) showToast('✅ Published! Your friend sees it instantly.');
   };
 
   const addNewProject = () => {
@@ -419,7 +419,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
 
 /* ===================== PROFILE ===================== */
 function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
-  const { portfolioOwner, updateOwner, skills, updateSkills } = usePortfolio();
+  const { portfolioOwner, updateOwner, skills, updateSkills, projects, processSteps, publish } = usePortfolio();
   const [owner, setOwner] = useState({ ...portfolioOwner });
   const [skillText, setSkillText] = useState(skills.map(s => `${s.name}:${s.level}`).join('\n'));
 
@@ -429,7 +429,7 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
     updateSkills(parsedSkills);
     showToast('Profile saved! Publishing...');
     const result = await publish({ projects, portfolioOwner: owner, skills: parsedSkills, processSteps });
-    if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    if (result.success) showToast('✅ Published! Your friend sees it instantly.');
     else showToast('⚠️ Saved locally. Click Publish to go live.');
   };
 
@@ -496,7 +496,7 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
           <li>Thumbnails are <strong>auto-generated</strong> from the first frame of your video</li>
           <li>Every save <strong>auto-publishes</strong> your changes to the live website</li>
           <li>All visitors see the <strong>same published data</strong> — not just your browser</li>
-          <li>Changes go live in <strong>1-2 minutes</strong> after publishing</li>
+          <li>Changes go live <strong>instantly</strong> after publishing</li>
           <li>Video duration is <strong>auto-detected</strong> from the file</li>
           <li>Supports: MP4, MOV, WEBM, AVI and more</li>
         </ul>
