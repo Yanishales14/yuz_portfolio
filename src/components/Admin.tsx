@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, ArrowUp, ArrowDown, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowDown, Save, Plus, Trash2, LogOut, RotateCcw, Check, Upload, Image, Video, X, Loader2, Cloud, AlertCircle, Globe } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, getVideoDuration, formatDuration } from '../hooks/useUpload';
@@ -42,9 +42,23 @@ export function AdminLogin({ onLogin }: { onLogin: (password: string) => { succe
 export function AdminPanel({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<AdminTab>('projects');
   const [toast, setToast] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { logout } = useAdminAuth();
+  const { publish } = usePortfolio();
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const onPublish = async () => {
+    setIsPublishing(true);
+    showToast('📤 Publishing to website...');
+    const result = await publish();
+    setIsPublishing(false);
+    if (result.success) {
+      showToast('✅ Published! Changes will be live in 1-2 minutes.');
+    } else {
+      showToast(`❌ Publish failed: ${result.error || 'Unknown error'}`);
+    }
+  };
 
   const tabs: { key: AdminTab; label: string; icon: React.ReactNode }[] = [
     { key: 'projects', label: 'Projects', icon: <Video size={14} /> },
@@ -61,9 +75,26 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
             <span className="text-border">|</span>
             <h1 className="text-lg font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Admin</h1>
           </div>
-          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><LogOut size={14} /> Logout</button>
+          <div className="flex items-center gap-3">
+            <button onClick={onPublish} disabled={isPublishing} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors">
+              {isPublishing ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
+              {isPublishing ? 'Publishing...' : 'Publish'}
+            </button>
+            <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"><LogOut size={14} /> Logout</button>
+          </div>
         </div>
       </div>
+
+      {isCloudinaryConfigured() && (
+        <div className="bg-green-50 border-b border-green-200 px-6 py-2">
+          <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <Globe size={14} className="text-green-600 shrink-0" />
+            <p className="text-xs text-green-800">
+              <strong>Auto-publish enabled.</strong> Every save is published to your website. Changes go live in 1-2 minutes.
+            </p>
+          </div>
+        </div>
+      )}
 
       {!isCloudinaryConfigured() && (
         <div className="bg-amber-50 border-b border-amber-200 px-6 py-3">
@@ -256,25 +287,36 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
     }
   };
 
-  const saveProject = () => {
+  const saveProject = async () => {
     if (!editingProject) return;
     const exists = projects.find(p => p.id === editingProject.id);
     if (exists) { updateProjects(projects.map(p => p.id === editingProject.id ? editingProject : p)); }
     else { updateProjects([...projects, editingProject]); }
-    setEditingProject(null); showToast('Project saved!');
+    setEditingProject(null);
+    showToast('Project saved! Publishing...');
+    const result = await publish();
+    if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    else showToast('⚠️ Saved locally. Click Publish to go live.');
   };
 
-  const deleteProject = (id: number) => {
-    if (confirm('Delete this project?')) { updateProjects(projects.filter(p => p.id !== id)); showToast('Project deleted'); }
+  const deleteProject = async (id: number) => {
+    if (confirm('Delete this project?')) {
+      updateProjects(projects.filter(p => p.id !== id));
+      showToast('Project deleted. Publishing...');
+      const result = await publish();
+      if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    }
   };
 
-  const moveProject = (index: number, direction: 'up' | 'down') => {
+  const moveProject = async (index: number, direction: 'up' | 'down') => {
     const newProjects = [...projects];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newProjects.length) return;
     [newProjects[index], newProjects[targetIndex]] = [newProjects[targetIndex], newProjects[index]];
     updateProjects(newProjects);
-    showToast(`Moved ${direction}`);
+    showToast(`Moved ${direction}. Publishing...`);
+    const result = await publish();
+    if (result.success) showToast('✅ Published! Live in 1-2 min.');
   };
 
   const addNewProject = () => {
@@ -376,11 +418,14 @@ function ProfileManager({ showToast }: { showToast: (msg: string) => void }) {
   const [owner, setOwner] = useState({ ...portfolioOwner });
   const [skillText, setSkillText] = useState(skills.map(s => `${s.name}:${s.level}`).join('\n'));
 
-  const save = () => {
+  const save = async () => {
     updateOwner(owner);
     const parsedSkills = skillText.split('\n').map(line => { const [name, level] = line.split(':').map(s => s.trim()); return { name: name || '', level: parseInt(level) || 50 }; }).filter(s => s.name);
     updateSkills(parsedSkills);
-    showToast('Profile saved!');
+    showToast('Profile saved! Publishing...');
+    const result = await publish();
+    if (result.success) showToast('✅ Published! Live in 1-2 min.');
+    else showToast('⚠️ Saved locally. Click Publish to go live.');
   };
 
   return (
@@ -444,11 +489,11 @@ function SettingsManager({ showToast }: { showToast: (msg: string) => void }) {
         <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4 leading-relaxed">
           <li>Videos are <strong>uploaded from your device</strong> to Cloudinary cloud storage</li>
           <li>Thumbnails are <strong>auto-generated</strong> from the first frame of your video</li>
-          <li>You can also upload a <strong>custom thumbnail</strong> image</li>
+          <li>Every save <strong>auto-publishes</strong> your changes to the live website</li>
+          <li>All visitors see the <strong>same published data</strong> — not just your browser</li>
+          <li>Changes go live in <strong>1-2 minutes</strong> after publishing</li>
           <li>Video duration is <strong>auto-detected</strong> from the file</li>
           <li>Supports: MP4, MOV, WEBM, AVI and more</li>
-          <li>All data is stored in your browser's localStorage</li>
-          <li>Admin password is required every session (no saved login)</li>
         </ul>
       </div>
 
