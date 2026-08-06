@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowUp, ArrowDown, Save, Plus, Trash2, LogOut, RotateCcw, C
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryConfig, setCloudinaryConfig, getVideoDuration, formatDuration } from '../hooks/useUpload';
+import { isYouTubeUrl, parseYouTubeInput, getYouTubeThumbnail } from '../hooks/useYouTube';
 import type { Project } from '../models/types';
 
 type AdminTab = 'projects' | 'profile' | 'settings';
@@ -341,7 +342,52 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-          <FileUploadZone onFileSelect={handleVideoUpload} label="📹 Video File" isUploading={isUploading} uploadProgress={uploadProgress} currentUrl={editingProject.videoUrl} currentThumbnail={editingProject.thumbnailUrl} onRemove={() => setEditingProject({ ...editingProject, videoUrl: '' })} />
+          <FileUploadZone onFileSelect={handleVideoUpload} label="📹 Upload Video File" isUploading={isUploading} uploadProgress={uploadProgress} currentUrl={editingProject.videoUrl && !isYouTubeUrl(editingProject.videoUrl) ? editingProject.videoUrl : ''} currentThumbnail={editingProject.thumbnailUrl} onRemove={() => setEditingProject({ ...editingProject, videoUrl: '' })} />
+        </div>
+
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+          <label className="block text-sm font-medium mb-2">▶️ Or paste YouTube link (unlisted)</label>
+          <input
+            type="text"
+            value={isYouTubeUrl(editingProject.videoUrl) ? editingProject.videoUrl : ''}
+            onChange={(e) => {
+              const url = e.target.value;
+              if (!url) {
+                setEditingProject({ ...editingProject, videoUrl: '' });
+                return;
+              }
+              const parsed = parseYouTubeInput(url);
+              if (parsed) {
+                setEditingProject({
+                  ...editingProject,
+                  videoUrl: url,
+                  thumbnailUrl: editingProject.thumbnailUrl || parsed.thumbnailUrl,
+                });
+              } else {
+                setEditingProject({ ...editingProject, videoUrl: url });
+              }
+            }}
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs"
+            placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+          />
+          {isYouTubeUrl(editingProject.videoUrl) && (
+            <div className="mt-3 flex items-center gap-3">
+              <div className="w-24 h-14 rounded-lg overflow-hidden border border-border flex-shrink-0">
+                <img
+                  src={editingProject.thumbnailUrl || getYouTubeThumbnail(editingProject.videoUrl, 'high') || ''}
+                  alt="YouTube preview"
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div>
+                <p className="text-xs text-green-600 font-medium">✓ YouTube video detected</p>
+                <p className="text-[10px] text-muted-foreground">Thumbnail auto-generated from YouTube</p>
+              </div>
+            </div>
+          )}
+          <p className="text-[10px] text-muted-foreground mt-2">Supports: youtube.com/watch?v=..., youtu.be/..., youtube.com/embed/..., youtube.com/shorts/...</p>
         </div>
 
         <div className="mb-6">
@@ -357,7 +403,15 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
           <div><label className="block text-sm font-medium mb-2">Role</label><input type="text" value={editingProject.role} onChange={(e) => setEditingProject({ ...editingProject, role: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Software</label><input type="text" value={editingProject.software.join(', ')} onChange={(e) => setEditingProject({ ...editingProject, software: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card" placeholder="Premiere Pro, After Effects, DaVinci Resolve" /></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Description</label><textarea value={editingProject.description} onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card min-h-[100px]" /></div>
-          <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, or paste direct .mp4 link)</span></label><input type="text" value={editingProject.videoUrl} onChange={(e) => setEditingProject({ ...editingProject, videoUrl: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" placeholder="https://res.cloudinary.com/..." /></div>
+          <div className="md:col-span-2"><label className="block text-sm font-medium mb-2">Video URL <span className="font-normal text-muted-foreground">(auto-filled on upload, YouTube link, or direct .mp4)</span></label><input type="text" value={editingProject.videoUrl} onChange={(e) => {
+            const url = e.target.value;
+            const parsed = parseYouTubeInput(url);
+            if (parsed) {
+              setEditingProject({ ...editingProject, videoUrl: url, thumbnailUrl: editingProject.thumbnailUrl || parsed.thumbnailUrl });
+            } else {
+              setEditingProject({ ...editingProject, videoUrl: url });
+            }
+          }} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card font-mono text-xs" placeholder="https://res.cloudinary.com/... or https://youtube.com/watch?v=..." /></div>
         </div>
       </div>
     );
@@ -403,7 +457,7 @@ function ProjectsManager({ showToast }: { showToast: (msg: string) => void }) {
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{project.title || 'Untitled'}</p>
-                <p className="text-xs text-muted-foreground">{project.client || 'No client'} • {project.year} • {project.category}{project.videoUrl && ' • ✅ Video'}</p>
+                <p className="text-xs text-muted-foreground">{project.client || 'No client'} • {project.year} • {project.category}{project.videoUrl && isYouTubeUrl(project.videoUrl) ? ' • ▶️ YouTube' : project.videoUrl ? ' • ✅ Video' : ''}</p>
               </div>
 
               {/* Actions */}

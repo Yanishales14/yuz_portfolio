@@ -2,7 +2,7 @@ export interface Project {
   id: number;
   title: string;
   category: 'commercial' | 'documentary' | 'music' | 'corporate' | 'short';
-  videoUrl: string;        // Cloudinary or direct .mp4/.webm URL
+  videoUrl: string;        // Cloudinary, direct .mp4, or YouTube URL
   thumbnailUrl: string;    // Thumbnail image URL
   client: string;
   duration: string;

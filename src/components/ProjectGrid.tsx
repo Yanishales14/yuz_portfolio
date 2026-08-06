@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, Clock, User, Wrench, Volume2, VolumeX } from 'lucide-react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useInView } from '../hooks/useAnimations';
+import { isYouTubeUrl, getYouTubeEmbedUrl, getYouTubeThumbnail } from '../hooks/useYouTube';
 import type { Project } from '../models/types';
 
 const categories = [
@@ -99,15 +100,16 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
   const [isMuted, setIsMuted] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   const hasVideo = !!project.videoUrl;
+  const isYouTube = isYouTubeUrl(project.videoUrl);
+  const ytEmbedUrl = isYouTube ? getYouTubeEmbedUrl(project.videoUrl) : null;
 
-  // Start muted autoplay when modal opens and video loads
+  // Start muted autoplay when modal opens and video loads (direct videos only)
   const handleCanPlay = () => {
-    if (!hasVideo || !videoRef.current || hasStarted) return;
+    if (!hasVideo || isYouTube || !videoRef.current || hasStarted) return;
     videoRef.current.play().then(() => {
       setHasStarted(true);
       setIsPlaying(true);
     }).catch(() => {
-      // Autoplay blocked — user must click play
       setIsPlaying(false);
     });
   };
@@ -140,6 +142,9 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
     return () => { videoRef.current?.pause(); };
   }, []);
 
+  // YouTube: auto-start on click
+  const [ytStarted, setYtStarted] = useState(false);
+
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
       <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -153,7 +158,36 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         <button onClick={onClose} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label="Close"><X size={18} /></button>
 
         <div className="aspect-video bg-black relative">
-          {hasVideo ? (
+          {hasVideo && isYouTube ? (
+            /* YouTube video */
+            ytStarted ? (
+              <iframe
+                src={ytEmbedUrl + '&autoplay=1&mute=1'}
+                className="w-full h-full"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                referrerPolicy="no-referrer"
+                title={project.title}
+              />
+            ) : (
+              <div className="w-full h-full relative cursor-pointer" onClick={() => setYtStarted(true)}>
+                <img
+                  src={project.thumbnailUrl || getYouTubeThumbnail(project.videoUrl, 'max') || ''}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
+                  <div className="w-20 h-20 rounded-full bg-red-600/90 backdrop-blur-sm flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                  <p className="text-white/70 text-sm mt-4">Play on YouTube</p>
+                </div>
+              </div>
+            )
+          ) : hasVideo ? (
+            /* Direct / Cloudinary video */
             <>
               <video
                 ref={videoRef}
@@ -170,14 +204,12 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
                 onEnded={() => setIsPlaying(false)}
               />
 
-              {/* Mute/unmute button when playing */}
               {hasStarted && isPlaying && (
                 <button onClick={toggleMute} className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors" aria-label={isMuted ? 'Unmute' : 'Mute'}>
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
               )}
 
-              {/* Big play button overlay — shown before video starts or when paused without native controls */}
               {!hasStarted && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 cursor-pointer z-10" onClick={handlePlayClick}>
                   <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
@@ -188,7 +220,6 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
               )}
             </>
           ) : project.thumbnailUrl ? (
-            /* No video uploaded — show thumbnail with overlay message */
             <div className="w-full h-full relative">
               <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
