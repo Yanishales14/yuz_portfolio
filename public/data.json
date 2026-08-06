@@ -17,7 +17,7 @@
     },
     {
       "id": 2,
-      "title": "Podcast youtube video  #1",
+      "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
       "thumbnailUrl": "https://img.youtube.com/vi/EbqC9oozRdI/hqdefault.jpg",
@@ -47,7 +47,7 @@
     },
     {
       "id": 4,
-      "title": "My New Amazing Project",
+      "title": "Short form Editing",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/mvhksmhevj74qddh4znn.mp4",
       "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/mvhksmhevj74qddh4znn.jpg",
@@ -62,7 +62,7 @@
     },
     {
       "id": 5,
-      "title": "My Amazing Project",
+      "title": "Scocial Media Reel EDITING",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/dz2khvgwlf6byioczjtw.mp4",
       "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/dz2khvgwlf6byioczjtw.jpg",
