@@ -69,7 +69,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
     <div className="group cursor-pointer" onClick={onClick} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary border border-border mb-4 shadow-md group-hover:shadow-xl transition-all duration-500">
         {thumbnail ? (
-          <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+          <img src={thumbnail} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
             <Play size={32} className="text-muted-foreground/30" />
@@ -144,6 +144,11 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
 
   // YouTube: auto-start on click
   const [ytStarted, setYtStarted] = useState(false);
+  const [ytError, setYtError] = useState(false);
+
+  // Get the direct YouTube watch URL for fallback
+  const ytVideoId = isYouTube ? (project.videoUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1] || null) : null;
+  const ytWatchUrl = ytVideoId ? `https://www.youtube.com/watch?v=${ytVideoId}` : null;
 
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
@@ -160,23 +165,35 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         <div className="aspect-video bg-black relative">
           {hasVideo && isYouTube ? (
             /* YouTube video */
-            ytStarted ? (
+            ytStarted && !ytError ? (
               <iframe
-                src={ytEmbedUrl + '&autoplay=1&mute=1'}
+                src={ytEmbedUrl + '&autoplay=1&mute=1&origin=' + encodeURIComponent(window.location.origin)}
                 className="w-full h-full"
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                referrerPolicy="no-referrer"
+                referrerPolicy="strict-origin-when-cross-origin"
                 title={project.title}
+                onError={() => setYtError(true)}
               />
+            ) : ytError ? (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-black/80">
+                <div className="w-20 h-20 rounded-full bg-red-600/90 flex items-center justify-center shadow-2xl mb-6">
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+                <p className="text-white/70 text-sm mb-4">Unable to play embedded video</p>
+                {ytWatchUrl && (
+                  <a href={ytWatchUrl} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-red-600 text-white rounded-xl font-medium text-sm hover:bg-red-700 transition-colors flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Watch on YouTube
+                  </a>
+                )}
+              </div>
             ) : (
               <div className="w-full h-full relative cursor-pointer" onClick={() => setYtStarted(true)}>
                 <img
                   src={project.thumbnailUrl || getYouTubeThumbnail(project.videoUrl, 'max') || ''}
                   alt={project.title}
                   className="w-full h-full object-cover"
-                  crossOrigin="anonymous"
-                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
                   <div className="w-20 h-20 rounded-full bg-red-600/90 backdrop-blur-sm flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
@@ -221,7 +238,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
             </>
           ) : project.thumbnailUrl ? (
             <div className="w-full h-full relative">
-              <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+              <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mb-3">
                   <Play size={24} className="text-white/40 ml-1" fill="currentColor" />
@@ -252,6 +269,14 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">Software Used</p>
               <p className="text-sm text-foreground">{project.software.join(', ')}</p>
+            </div>
+          )}
+          {isYouTube && ytWatchUrl && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <a href={ytWatchUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 text-red-600 rounded-lg text-sm font-medium hover:bg-red-600/20 transition-colors">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Watch on YouTube
+              </a>
             </div>
           )}
         </div>

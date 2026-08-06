@@ -73,8 +73,6 @@ export function FilmStrip() {
                           alt={project.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           loading="lazy"
-                          crossOrigin="anonymous"
-                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
