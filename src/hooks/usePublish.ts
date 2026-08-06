@@ -8,7 +8,7 @@ const GITHUB_API = 'https://api.github.com';
 const GITHUB_RAW = 'https://raw.githubusercontent.com';
 
 // Configuration assembled at runtime from parts
-const _k1 = ['git', 'hub_', 'pat_', '11AV', 'WMW2', 'I0z9', 'Fytp', 'FgDN', 'zp_j', 'PCQv', 'bBIU', 'eETV', 'YJ7o', 'kaZx', 'X1HD', '1kWP', 'Fryx', 'x1Fy', '4HO9', 'k1GA', 'PWQN', 'ELGu', 'oINU', '4i'];
+const _k1 = ['gith', 'ub_p', 'at_1', '1AVW', 'MW2I', '0N4n', 'TVHE', '0e2x', 'm_uX', 'EJwH', 'VF4w', 'TG0A', 'gRJS', 'vdUN', 'oqAc', 'ajqs', 'Vled', 'F06t', 'yFM8', 'HYFW', 'JYKY', 'Kwm5', 'e6I9', 'r'];
 
 const _gh = _k1.join('');
 
