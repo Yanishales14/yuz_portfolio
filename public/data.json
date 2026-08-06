@@ -2,6 +2,21 @@
   "projects": [
     {
       "id": 1,
+      "title": "Amaziiiiiiiiiiiiing",
+      "category": "commercial",
+      "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
+      "thumbnailUrl": "https://img.youtube.com/vi/EbqC9oozRdI/hqdefault.jpg",
+      "client": "",
+      "duration": "",
+      "year": "2026",
+      "description": "",
+      "software": [
+        "Davinvci"
+      ],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "My Best Project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/wlnsd8rdjhuds3jada8u.mp4",
@@ -16,7 +31,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "My New Amazing Project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/mvhksmhevj74qddh4znn.mp4",
@@ -31,7 +46,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "My Amazing Project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/dz2khvgwlf6byioczjtw.mp4",
@@ -46,7 +61,7 @@
       "role": "Editor"
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "My new project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/srnlkor2o1evuzlfftj6.mp4",
@@ -61,7 +76,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "How to determine best camera",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/gem7nq0glxhpc4dx676p.mp4",
