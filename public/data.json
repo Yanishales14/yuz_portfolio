@@ -2,6 +2,21 @@
   "projects": [
     {
       "id": 1,
+      "title": "\"This is what happens when raw footage meets a vision. 🎥✨",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jj5esx8o25pbkn0wxke1.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/jj5esx8o25pbkn0wxke1.jpg",
+      "client": "",
+      "duration": "0:19",
+      "year": "2026",
+      "description": "Every cut tells a story. This piece is all about precise pacing, immersive sound design, and visual rhythm that keeps the audience hooked from the very first second. Brought to life through seamless editing, dynamic transitions, and a carefully graded color palette to maximize emotional impact.",
+      "software": [
+        "davinciresolve"
+      ],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "Gaming Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/ptU9Vw9oWgI",
@@ -16,7 +31,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "Ufc Gameplay",
       "category": "commercial",
       "videoUrl": "https://youtu.be/_lVJz2Xu8GU?si=ipuoDiY-HovFVcVf",
@@ -31,7 +46,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
@@ -46,7 +61,7 @@
       "role": "Editor"
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "Scocial Media Reel",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/wlnsd8rdjhuds3jada8u.mp4",
@@ -61,7 +76,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Short form Editing",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/mvhksmhevj74qddh4znn.mp4",
@@ -76,7 +91,7 @@
       "role": "Editor"
     },
     {
-      "id": 6,
+      "id": 7,
       "title": "Scocial Media Reel EDITING",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/dz2khvgwlf6byioczjtw.mp4",
@@ -91,7 +106,7 @@
       "role": "Editor"
     },
     {
-      "id": 7,
+      "id": 8,
       "title": "Clean Editing Project",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/srnlkor2o1evuzlfftj6.mp4",
@@ -106,7 +121,7 @@
       "role": "Editor"
     },
     {
-      "id": 8,
+      "id": 9,
       "title": "How to determine best camera",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/gem7nq0glxhpc4dx676p.mp4",
