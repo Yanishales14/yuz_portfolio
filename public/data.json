@@ -2,6 +2,21 @@
   "projects": [
     {
       "id": 1,
+      "title": "smooth cut",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jwsjytrpnzmanmt7q2qz.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/jwsjytrpnzmanmt7q2qz.jpg",
+      "client": "",
+      "duration": "0:12",
+      "year": "2026",
+      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
+      "software": [
+        "davinciresolve"
+      ],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "\"This is what happens when raw footage meets a vision. 🎥✨",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jj5esx8o25pbkn0wxke1.mp4",
@@ -16,7 +31,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "Gaming Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/ptU9Vw9oWgI",
@@ -31,7 +46,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Ufc Gameplay",
       "category": "commercial",
       "videoUrl": "https://youtu.be/_lVJz2Xu8GU?si=ipuoDiY-HovFVcVf",
@@ -46,7 +61,7 @@
       "role": "Editor"
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
@@ -61,7 +76,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Scocial Media Reel",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/wlnsd8rdjhuds3jada8u.mp4",
