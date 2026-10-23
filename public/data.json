@@ -74,36 +74,6 @@
         "Davinci"
       ],
       "role": "Editor"
-    },
-    {
-      "id": 6,
-      "title": "Short form Editing",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/mvhksmhevj74qddh4znn.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/mvhksmhevj74qddh4znn.jpg",
-      "client": "",
-      "duration": "0:22",
-      "year": "2026",
-      "description": "",
-      "software": [
-        "Davinci"
-      ],
-      "role": "Editor"
-    },
-    {
-      "id": 7,
-      "title": "Scocial Media Reel EDITING",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/dz2khvgwlf6byioczjtw.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/dz2khvgwlf6byioczjtw.jpg",
-      "client": "",
-      "duration": "0:12",
-      "year": "2026",
-      "description": "",
-      "software": [
-        "Davinci"
-      ],
-      "role": "Editor"
     }
   ],
   "portfolioOwner": {
