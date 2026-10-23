@@ -2,6 +2,19 @@
   "projects": [
     {
       "id": 1,
+      "title": "13s visual edit",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/yq7z0agyorrya2dpooql.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/yq7z0agyorrya2dpooql.jpg",
+      "client": "",
+      "duration": "0:13",
+      "year": "2026",
+      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.16:33",
+      "software": [],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "smooth cut",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jwsjytrpnzmanmt7q2qz.mp4",
@@ -16,7 +29,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "\"This is what happens when raw footage meets a vision. 🎥✨",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jj5esx8o25pbkn0wxke1.mp4",
@@ -31,7 +44,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Gaming Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/ptU9Vw9oWgI",
@@ -46,7 +59,7 @@
       "role": "Editor"
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "Ufc Gameplay",
       "category": "commercial",
       "videoUrl": "https://youtu.be/_lVJz2Xu8GU?si=ipuoDiY-HovFVcVf",
@@ -61,7 +74,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
@@ -76,7 +89,7 @@
       "role": "Editor"
     },
     {
-      "id": 6,
+      "id": 7,
       "title": "Scocial Media Reel",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/wlnsd8rdjhuds3jada8u.mp4",
