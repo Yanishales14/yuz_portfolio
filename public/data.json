@@ -2,14 +2,14 @@
   "projects": [
     {
       "id": 1,
-      "title": "gtrtete",
+      "title": "Clean Visual Edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/p4v7ft1fcub9pqxhynwx.mp4",
       "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/p4v7ft1fcub9pqxhynwx.jpg",
-      "client": "tetet",
+      "client": "",
       "duration": "0:18",
       "year": "2026",
-      "description": "arzrazrza",
+      "description": "⁠A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
       "software": [
         "Davinci"
       ],
