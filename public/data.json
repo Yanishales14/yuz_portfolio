@@ -2,6 +2,21 @@
   "projects": [
     {
       "id": 1,
+      "title": "Clean Editing for short reels",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/owuunzypya9zra81cgel.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/owuunzypya9zra81cgel.jpg",
+      "client": "",
+      "duration": "0:13",
+      "year": "2026",
+      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
+      "software": [
+        "Davinci Resolve"
+      ],
+      "role": "Editor"
+    },
+    {
+      "id": 2,
       "title": "Clean Visual Edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/p4v7ft1fcub9pqxhynwx.mp4",
@@ -16,7 +31,7 @@
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 3,
       "title": "smooth flow edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/qyuaszqythl9isigh9is.mp4",
@@ -29,7 +44,7 @@
       "role": "Editor"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "13s visual edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/yq7z0agyorrya2dpooql.mp4",
@@ -42,7 +57,7 @@
       "role": "Editor"
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "smooth cut",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jwsjytrpnzmanmt7q2qz.mp4",
@@ -57,22 +72,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
-      "title": "\"This is what happens when raw footage meets a vision. 🎥✨",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jj5esx8o25pbkn0wxke1.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/jj5esx8o25pbkn0wxke1.jpg",
-      "client": "",
-      "duration": "0:19",
-      "year": "2026",
-      "description": "Every cut tells a story. This piece is all about precise pacing, immersive sound design, and visual rhythm that keeps the audience hooked from the very first second. Brought to life through seamless editing, dynamic transitions, and a carefully graded color palette to maximize emotional impact.",
-      "software": [
-        "davinciresolve"
-      ],
-      "role": "Editor"
-    },
-    {
-      "id": 6,
+      "id": 7,
       "title": "Gaming Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/ptU9Vw9oWgI",
@@ -87,7 +87,7 @@
       "role": "Editor"
     },
     {
-      "id": 7,
+      "id": 8,
       "title": "Ufc Gameplay",
       "category": "commercial",
       "videoUrl": "https://youtu.be/_lVJz2Xu8GU?si=ipuoDiY-HovFVcVf",
@@ -102,7 +102,7 @@
       "role": "Editor"
     },
     {
-      "id": 8,
+      "id": 9,
       "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
