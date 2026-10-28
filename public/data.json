@@ -1,6 +1,19 @@
 {
   "projects": [
     {
+      "id": 2,
+      "title": "smooth flow edit",
+      "category": "commercial",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/qyuaszqythl9isigh9is.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/qyuaszqythl9isigh9is.jpg",
+      "client": "",
+      "duration": "0:12",
+      "year": "2026",
+      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.16:33",
+      "software": [],
+      "role": "Editor"
+    },
+    {
       "id": 1,
       "title": "Clean Visual Edit",
       "category": "commercial",
@@ -13,19 +26,6 @@
       "software": [
         "Davinci"
       ],
-      "role": "Editor"
-    },
-    {
-      "id": 2,
-      "title": "smooth flow edit",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/qyuaszqythl9isigh9is.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/qyuaszqythl9isigh9is.jpg",
-      "client": "",
-      "duration": "0:12",
-      "year": "2026",
-      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.16:33",
-      "software": [],
       "role": "Editor"
     },
     {
