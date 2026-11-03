@@ -57,21 +57,6 @@
       "role": "Editor"
     },
     {
-      "id": 5,
-      "title": "smooth cut",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/jwsjytrpnzmanmt7q2qz.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/jwsjytrpnzmanmt7q2qz.jpg",
-      "client": "",
-      "duration": "0:12",
-      "year": "2026",
-      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
-      "software": [
-        "davinciresolve"
-      ],
-      "role": "Editor"
-    },
-    {
       "id": 7,
       "title": "Gaming Video",
       "category": "commercial",
