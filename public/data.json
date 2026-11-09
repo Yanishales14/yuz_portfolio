@@ -1,22 +1,20 @@
 {
   "projects": [
     {
-      "id": 1,
-      "title": "Clean Edit",
+      "id": 2,
+      "title": "Smooth Flow",
       "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/ismbyvdnxniiejtwn0ri.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/ismbyvdnxniiejtwn0ri.jpg",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/yyhiylkiarzca0ag36zo.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/yyhiylkiarzca0ag36zo.jpg",
       "client": "",
-      "duration": "0:14",
+      "duration": "0:16",
       "year": "2026",
       "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
-      "software": [
-        "DAvinciResolve"
-      ],
+      "software": [],
       "role": "Editor"
     },
     {
-      "id": 2,
+      "id": 1,
       "title": "Clean Edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/emrdzytppws0fnkwhm64.mp4",
@@ -30,19 +28,6 @@
     },
     {
       "id": 3,
-      "title": "Smooth Flow",
-      "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/yyhiylkiarzca0ag36zo.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/yyhiylkiarzca0ag36zo.jpg",
-      "client": "",
-      "duration": "0:16",
-      "year": "2026",
-      "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve.",
-      "software": [],
-      "role": "Editor"
-    },
-    {
-      "id": 4,
       "title": "Clean Visual Edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/p4v7ft1fcub9pqxhynwx.mp4",
@@ -57,7 +42,7 @@
       "role": "Editor"
     },
     {
-      "id": 5,
+      "id": 4,
       "title": "Clean Editing for short reels",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/owuunzypya9zra81cgel.mp4",
@@ -72,7 +57,7 @@
       "role": "Editor"
     },
     {
-      "id": 6,
+      "id": 5,
       "title": "smooth flow edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/qyuaszqythl9isigh9is.mp4",
@@ -85,7 +70,7 @@
       "role": "Editor"
     },
     {
-      "id": 7,
+      "id": 6,
       "title": "13s visual edit",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/yq7z0agyorrya2dpooql.mp4",
@@ -98,7 +83,7 @@
       "role": "Editor"
     },
     {
-      "id": 8,
+      "id": 7,
       "title": "Smooth Cut",
       "category": "commercial",
       "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/al5xi2qf1ump1ipcf6fm.mp4",
@@ -113,7 +98,7 @@
       "role": "Editor"
     },
     {
-      "id": 9,
+      "id": 8,
       "title": "Ufc Gameplay",
       "category": "commercial",
       "videoUrl": "https://youtu.be/_lVJz2Xu8GU?si=ipuoDiY-HovFVcVf",
@@ -128,7 +113,7 @@
       "role": "Editor"
     },
     {
-      "id": 10,
+      "id": 9,
       "title": "Podcast Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/EbqC9oozRdI?si=4qTIxHxZ1IRwHPti",
@@ -143,7 +128,7 @@
       "role": "Editor"
     },
     {
-      "id": 11,
+      "id": 10,
       "title": "Gaming Video",
       "category": "commercial",
       "videoUrl": "https://youtu.be/ptU9Vw9oWgI",
