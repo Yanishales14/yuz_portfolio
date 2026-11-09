@@ -2,17 +2,15 @@
   "projects": [
     {
       "id": 1,
-      "title": "Smooth Flow",
+      "title": "Clean Edit",
       "category": "commercial",
-      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/rczgbaipwtm9y2obi7jp.mp4",
-      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/rczgbaipwtm9y2obi7jp.jpg",
+      "videoUrl": "https://res.cloudinary.com/dkli15vin/video/upload/yuz-portfolio/emrdzytppws0fnkwhm64.mp4",
+      "thumbnailUrl": "https://res.cloudinary.com/dkli15vin/video/upload/so_0,w_800,h_450,c_fill/yuz-portfolio/emrdzytppws0fnkwhm64.jpg",
       "client": "",
       "duration": "0:14",
       "year": "2026",
       "description": "A fast-paced 12-second commercial edit focused on dynamic pacing and professional color grading. Edited using DaVinci Resolve",
-      "software": [
-        "Davinciresolve"
-      ],
+      "software": [],
       "role": "Editor"
     },
     {
